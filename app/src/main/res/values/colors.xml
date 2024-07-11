@@ -2,4 +2,14 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gray10">#000000</color>
+    <color name="gray20">#0F0F13</color>
+    <color name="gray30">#181C22</color>
+    <color name="gray40">#525264</color>
+    <color name="gray50">#76768D</color>
+    <color name="gray60">#9494A8</color>
+    <color name="gray70">#B2B2BD</color>
+    <color name="gray80">#CCCCD3</color>
+    <color name="gray90">#E4E4E9</color>
+    <color name="gray100">#F0F0F9</color>
 </resources>
