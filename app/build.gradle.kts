@@ -18,6 +18,8 @@ android {
     val KAKAO_NATIVE_KEY = localProperties.getProperty("KAKAO_NATIVE_KEY") ?: ""
     val MANIFESTS_KAKAO_NATIVE_KEY = localProperties.getProperty("MANIFESTS_KAKAO_NATIVE_KEY") ?: ""
 
+    val BASE_URL = localProperties.getProperty("BASE_URL") ?: ""
+
     defaultConfig {
         applicationId = "com.seogaemo.android_adego"
         minSdk = 29
@@ -29,9 +31,11 @@ android {
 
         buildConfigField("String", "KAKAO_NATIVE_KEY", "\"$KAKAO_NATIVE_KEY\"")
         resValue("string", "KAKAO_NATIVE_KEY", KAKAO_NATIVE_KEY)
-
         buildConfigField("String", "MANIFESTS_KAKAO_NATIVE_KEY", "\"$MANIFESTS_KAKAO_NATIVE_KEY\"")
         resValue("string", "MANIFESTS_KAKAO_NATIVE_KEY", MANIFESTS_KAKAO_NATIVE_KEY)
+
+        buildConfigField("String", "BASE_URL", "\"$BASE_URL\"")
+        resValue("string", "BASE_URL", BASE_URL)
 
     }
 
