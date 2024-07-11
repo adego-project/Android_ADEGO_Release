@@ -12,6 +12,7 @@ constraintlayout = "2.1.4"
 converterGson = "2.9.0"
 converterScalars = "2.5.0"
 retrofit = "2.9.0"
+v2All = "2.20.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -25,6 +26,7 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converterScalars" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+v2-all = { module = "com.kakao.sdk:v2-all", version.ref = "v2All" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
