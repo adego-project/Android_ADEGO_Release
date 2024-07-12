@@ -19,6 +19,7 @@ import com.kakao.sdk.user.UserApiClient
 import com.seogaemo.android_adego.BuildConfig
 import com.seogaemo.android_adego.data.SignInRequest
 import com.seogaemo.android_adego.data.SignInResponses
+import com.seogaemo.android_adego.data.UserResponse
 import com.seogaemo.android_adego.database.TokenManager
 import com.seogaemo.android_adego.databinding.ActivityLoginBinding
 import com.seogaemo.android_adego.network.RetrofitAPI
@@ -144,22 +145,54 @@ class LoginActivity : AppCompatActivity() {
     private fun saveToken(context: Context, type: String, token: String) {
         CoroutineScope(Dispatchers.IO).launch {
             val signInResponses = postSignIn(context, type, SignInRequest(token))
+
             withContext(Dispatchers.Main) {
                 if (signInResponses != null) {
                     TokenManager.accessToken = signInResponses.accessToken
                     TokenManager.refreshToken = signInResponses.refreshToken
                     finishLogin(context)
                 } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "로그인에 실패하였습니다", Toast.LENGTH_SHORT).show()
-                    }
+                    Toast.makeText(context, "로그인에 실패하였습니다", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
     private fun finishLogin(context: Context) {
-        startActivity(Intent(context, MainActivity::class.java))
-        finishAffinity()
+        CoroutineScope(Dispatchers.IO).launch {
+            val isFirst = getUser(context)?.name.isNullOrEmpty()
+            withContext(Dispatchers.Main) {
+                if (!isFirst) {
+                    startActivity(Intent(context, MainActivity::class.java))
+                } else {
+                    startActivity(Intent(context, ProfileNameActivity::class.java))
+                }
+                finishAffinity()
+            }
+        }
+
     }
+
+    private suspend fun getUser(context: Context): UserResponse? {
+        return try {
+            withContext(Dispatchers.IO) {
+                val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
+                val response = retrofitAPI.getUser("bearer ${TokenManager.accessToken}")
+                if (response.isSuccessful) {
+                    response.body()
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "정보 조회를 실패하였습니다", Toast.LENGTH_SHORT).show()
+                    }
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "정보 조회를 실패하였습니다", Toast.LENGTH_SHORT).show()
+            }
+            null
+        }
+    }
+
 }
