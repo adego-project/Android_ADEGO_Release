@@ -1,7 +1,7 @@
 package com.seogaemo.android_adego.network
 
 import com.seogaemo.android_adego.data.SignInRequest
-import com.seogaemo.android_adego.data.SignInResponses
+import com.seogaemo.android_adego.data.SignInResponse
 import com.seogaemo.android_adego.data.UserResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -14,12 +14,12 @@ interface RetrofitAPI {
     @POST("oauth/kakao/login")
     suspend fun kakaoSignIn(
         @Body body: SignInRequest
-    ): Response<SignInResponses>
+    ): Response<SignInResponse>
 
     @POST("oauth/google/login")
     suspend fun googleSignIn(
         @Body body: SignInRequest
-    ): Response<SignInResponses>
+    ): Response<SignInResponse>
 
     @GET("user")
     suspend fun getUser(

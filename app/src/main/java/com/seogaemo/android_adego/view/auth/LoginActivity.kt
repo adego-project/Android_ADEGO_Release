@@ -18,7 +18,7 @@ import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
 import com.seogaemo.android_adego.BuildConfig
 import com.seogaemo.android_adego.data.SignInRequest
-import com.seogaemo.android_adego.data.SignInResponses
+import com.seogaemo.android_adego.data.SignInResponse
 import com.seogaemo.android_adego.data.UserResponse
 import com.seogaemo.android_adego.database.TokenManager
 import com.seogaemo.android_adego.databinding.ActivityLoginBinding
@@ -120,7 +120,7 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    private suspend fun postSignIn(context: Context, type: String, signInRequest: SignInRequest): SignInResponses? {
+    private suspend fun postSignIn(context: Context, type: String, signInRequest: SignInRequest): SignInResponse? {
         return try {
             withContext(Dispatchers.IO) {
                 val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
