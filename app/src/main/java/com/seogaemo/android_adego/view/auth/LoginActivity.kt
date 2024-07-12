@@ -3,12 +3,20 @@ package com.seogaemo.android_adego.view.auth
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
+import com.seogaemo.android_adego.BuildConfig
 import com.seogaemo.android_adego.data.SignInRequest
 import com.seogaemo.android_adego.data.SignInResponses
 import com.seogaemo.android_adego.database.TokenManager
@@ -20,6 +28,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
@@ -30,6 +39,10 @@ class LoginActivity : AppCompatActivity() {
 
         binding.kakaoLoginButton.setOnClickListener {
             kakaoLogin(this@LoginActivity)
+        }
+
+        binding.googleLoginButton.setOnClickListener {
+            googleLogin(this@LoginActivity)
         }
 
     }
@@ -60,6 +73,52 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    private fun googleLogin(context: Context) {
+        val credentialManager = CredentialManager.create(context)
+
+        val signInWithGoogleOption = GetSignInWithGoogleOption.Builder(BuildConfig.CLIENT_ID)
+            .setNonce(UUID.randomUUID().toString())
+            .build()
+
+        val request: GetCredentialRequest = GetCredentialRequest
+            .Builder()
+            .addCredentialOption(signInWithGoogleOption)
+            .build()
+
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val result = credentialManager.getCredential(
+                    request = request,
+                    context = context,
+                )
+                val credential = result.credential
+                when (result.credential) {
+                    is CustomCredential -> {
+                        if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                            try {
+                                val googleIdTokenCredential = GoogleIdTokenCredential
+                                    .createFrom(credential.data)
+                                Log.d("확인", googleIdTokenCredential.idToken )
+                                saveToken(context, "google", googleIdTokenCredential.idToken)
+                            } catch (e: GoogleIdTokenParsingException) {
+                                Toast.makeText(context, "구글 로그인에 실패하였습니다", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        else {
+                            Toast.makeText(context, "구글 로그인에 실패하였습니다", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    else -> {
+                        Toast.makeText(context, "구글 로그인에 실패하였습니다", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "구글 로그인에 실패하였습니다", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    }
+
     private suspend fun postSignIn(context: Context, type: String, signInRequest: SignInRequest): SignInResponses? {
         return try {
             withContext(Dispatchers.IO) {
@@ -85,13 +144,17 @@ class LoginActivity : AppCompatActivity() {
     private fun saveToken(context: Context, type: String, token: String) {
         CoroutineScope(Dispatchers.IO).launch {
             val signInResponses = postSignIn(context, type, SignInRequest(token))
-            if (signInResponses != null) {
-                TokenManager.accessToken = signInResponses.accessToken
-                TokenManager.refreshToken = signInResponses.refreshToken
-            } else {
-                Toast.makeText(context, "로그인에 실패하였습니다", Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                if (signInResponses != null) {
+                    TokenManager.accessToken = signInResponses.accessToken
+                    TokenManager.refreshToken = signInResponses.refreshToken
+                    finishLogin(context)
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "로그인에 실패하였습니다", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
-            withContext(Dispatchers.Main) { finishLogin(context) }
         }
     }
 
