@@ -16,6 +16,9 @@
         android:theme="@style/Theme.Android_ADEGO"
         tools:targetApi="31">
         <activity
+            android:name=".view.alarm.AlarmActivity"
+            android:exported="false" />
+        <activity
             android:name=".view.plan.PlanActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
