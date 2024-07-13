@@ -3,7 +3,6 @@ package com.seogaemo.android_adego.view.auth
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.credentials.CredentialManager
@@ -99,7 +98,6 @@ class LoginActivity : AppCompatActivity() {
                             try {
                                 val googleIdTokenCredential = GoogleIdTokenCredential
                                     .createFrom(credential.data)
-                                Log.d("확인", googleIdTokenCredential.idToken )
                                 saveToken(context, "google", googleIdTokenCredential.idToken)
                             } catch (e: GoogleIdTokenParsingException) {
                                 Toast.makeText(context, "구글 로그인에 실패하였습니다", Toast.LENGTH_SHORT).show()
