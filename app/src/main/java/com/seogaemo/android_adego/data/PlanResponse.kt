@@ -5,6 +5,6 @@ data class PlanResponse(
     val date: String,
     val id: String,
     val name: String,
-    val place: String,
+    val place: Place,
     val users: List<UserResponse>
 )
