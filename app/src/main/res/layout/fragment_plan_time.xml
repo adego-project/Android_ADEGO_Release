@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="40dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="89dp"
+        android:layout_marginTop="76dp"
         android:fontFamily="@font/regular"
         android:text="약속 시간을 정해주세요."
         android:textColor="#F0F0F9"

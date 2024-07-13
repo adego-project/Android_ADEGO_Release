@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="89dp"
+        android:layout_marginTop="76dp"
         android:fontFamily="@font/regular"
         android:text="약속이 생성됐어요!\n링크를 보내고\n친구들과 함께하세요."
         android:textColor="#F0F0F9"
