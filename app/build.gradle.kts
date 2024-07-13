@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -21,6 +22,8 @@ android {
     val MANIFESTS_KAKAO_NATIVE_KEY = localProperties.getProperty("MANIFESTS_KAKAO_NATIVE_KEY") ?: ""
 
     val CLIENT_ID = localProperties.getProperty("CLIENT_ID") ?: ""
+
+    val MAPS_API_KEY = localProperties.getProperty("MAPS_API_KEY") ?: ""
 
     defaultConfig {
         applicationId = "com.seogaemo.android_adego"
@@ -41,6 +44,9 @@ android {
 
         buildConfigField("String", "CLIENT_ID", "\"$CLIENT_ID\"")
         resValue("string", "CLIENT_ID", CLIENT_ID)
+
+        buildConfigField("String", "MAPS_API_KEY", "\"$MAPS_API_KEY\"")
+        resValue("string", "MAPS_API_KEY", MAPS_API_KEY)
     }
 
     buildTypes {
@@ -89,4 +95,6 @@ dependencies {
     implementation(libs.androidx.credentials)
 
     implementation(libs.glide)
+
+    implementation(libs.play.services.maps)
 }

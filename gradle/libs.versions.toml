@@ -12,7 +12,9 @@ activity = "1.9.0"
 constraintlayout = "2.1.4"
 converterGson = "2.9.0"
 converterScalars = "2.5.0"
+playServicesMaps = "19.0.0"
 retrofit = "2.9.0"
+secretsGradlePlugin = "2.0.1"
 v2All = "2.20.0"
 credentials = "1.2.0"
 credentialsPlayServicesAuth = "1.2.0"
@@ -28,9 +30,11 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converterScalars" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
 v2-all = { module = "com.kakao.sdk:v2-all", version.ref = "v2All" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
