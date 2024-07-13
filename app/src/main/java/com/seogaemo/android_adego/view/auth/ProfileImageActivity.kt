@@ -67,8 +67,6 @@ class ProfileImageActivity : AppCompatActivity() {
         binding = ActivityProfileImageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        Log.d("확인", intent.getStringExtra("name")!!)
-
         binding.backButton.setOnClickListener {
             finish()
         }
@@ -83,6 +81,11 @@ class ProfileImageActivity : AppCompatActivity() {
                 val isSuccess = updateName(this@ProfileImageActivity, intent.getStringExtra("name")!!) != null
                 withContext(Dispatchers.Main) {
                     if (isSuccess) {
+                        val sharedPreference = getSharedPreferences("SharedPreference", MODE_PRIVATE)
+                        val editor = sharedPreference.edit()
+                        editor.putBoolean("isFirst", false)
+                        editor.apply()
+
                         startActivity(Intent(this@ProfileImageActivity, MainActivity::class.java))
                         finishAffinity()
                     } else {
@@ -117,6 +120,8 @@ class ProfileImageActivity : AppCompatActivity() {
                         TokenManager.accessToken = getRefresh.accessToken
                         updateImage(context, image)
                     } else {
+                        TokenManager.refreshToken = ""
+                        TokenManager.accessToken = ""
                         startActivity(Intent(context, LoginActivity::class.java))
                         finishAffinity()
                         null
@@ -152,6 +157,8 @@ class ProfileImageActivity : AppCompatActivity() {
                         TokenManager.accessToken = getRefresh.accessToken
                         updateName(context, name)
                     } else {
+                        TokenManager.refreshToken = ""
+                        TokenManager.accessToken = ""
                         startActivity(Intent(context, LoginActivity::class.java))
                         finishAffinity()
                         null
