@@ -97,4 +97,6 @@ dependencies {
     implementation(libs.glide)
 
     implementation(libs.play.services.maps)
+
+    implementation(libs.material.calendarview)
 }

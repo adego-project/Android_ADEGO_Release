@@ -12,6 +12,7 @@ activity = "1.9.0"
 constraintlayout = "2.1.4"
 converterGson = "2.9.0"
 converterScalars = "2.5.0"
+materialCalendarview = "2.0.1"
 playServicesMaps = "19.0.0"
 retrofit = "2.9.0"
 secretsGradlePlugin = "2.0.1"
@@ -30,6 +31,7 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+material-calendarview = { module = "com.github.prolificinteractive:material-calendarview", version.ref = "materialCalendarview" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "converterScalars" }
