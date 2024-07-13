@@ -1,16 +1,231 @@
 package com.seogaemo.android_adego.view.main
 
+import android.content.Context
+import android.content.Intent
+import android.graphics.Paint
+import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.seogaemo.android_adego.data.ImageRequest
+import com.seogaemo.android_adego.data.PlanResponse
+import com.seogaemo.android_adego.data.UserResponse
+import com.seogaemo.android_adego.database.SharedPreference
+import com.seogaemo.android_adego.database.TokenManager
 import com.seogaemo.android_adego.databinding.ActivitySettingBinding
+import com.seogaemo.android_adego.network.RetrofitAPI
+import com.seogaemo.android_adego.network.RetrofitClient
+import com.seogaemo.android_adego.util.Util
+import com.seogaemo.android_adego.util.Util.createDialog
+import com.seogaemo.android_adego.util.Util.getUser
+import com.seogaemo.android_adego.util.Util.uriToBase64
+import com.seogaemo.android_adego.view.auth.LoginActivity
+import com.seogaemo.android_adego.view.auth.ProfileNameActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SettingActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingBinding
+
+    private val getContent: ActivityResultLauncher<String> =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let {
+                val image = uriToBase64(this@SettingActivity, it).toString()
+                CoroutineScope(Dispatchers.IO).launch {
+                    updateImage(this@SettingActivity, image)
+                }
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        CoroutineScope(Dispatchers.IO).launch {
+            val userInfo = getUser(this@SettingActivity)
+            withContext(Dispatchers.Main) {
+                binding.nameText.text = userInfo?.name
+                Glide.with(this@SettingActivity)
+                    .load(userInfo?.profileImage)
+                    .centerCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(binding.imageView)
+            }
+        }
+
+        binding.backButton.setOnClickListener {
+            finish()
+        }
+
+        binding.leavePlanButton.apply {
+            this.paintFlags = binding.leavePlanButton.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            this.setOnClickListener {
+                createDialog(this@SettingActivity, "약속에서\n나가시겠습니까?", "나가기") {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        leavePlan(this@SettingActivity)
+                    }
+                }
+            }
+        }
+
+        binding.logoutButton.apply {
+            this.paintFlags = binding.logoutButton.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            this.setOnClickListener {
+                createDialog(this@SettingActivity, "계정에서\n로그아웃 하시겠습니까?", "로그아웃") {
+                    SharedPreference.isFirst = true
+                    TokenManager.refreshToken = ""
+                    TokenManager.accessToken = ""
+
+                    startActivity(Intent(this@SettingActivity, LoginActivity::class.java))
+                    finishAffinity()
+                }
+            }
+        }
+
+        binding.withdrawalButton.apply {
+            this.paintFlags = binding.withdrawalButton.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            this.setOnClickListener {
+                createDialog(this@SettingActivity, "계정에서\n탈퇴 하시겠습니까?", "탈퇴") { customDialog ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val isSuccess = deleteUser(this@SettingActivity) != null
+                        withContext(Dispatchers.Main) {
+                            if (isSuccess) {
+                                SharedPreference.isFirst = true
+                                TokenManager.refreshToken = ""
+                                TokenManager.accessToken = ""
+
+                                startActivity(Intent(this@SettingActivity, LoginActivity::class.java))
+                                finishAffinity()
+                            } else {
+                                customDialog.cancel()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        binding.changeNicknameButton.apply {
+            this.paintFlags = binding.changeNicknameButton.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            this.setOnClickListener {
+                startActivity(
+                    Intent(this@SettingActivity, ProfileNameActivity::class.java).apply {
+                        putExtra("isSetting", true)
+                    }
+                )
+            }
+        }
+
+        binding.changeImageButton.apply {
+            binding.changeImageText.paintFlags = binding.changeImageText.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+            this.setOnClickListener { getContent.launch("image/*") }
+        }
 
     }
+
+
+    private suspend fun updateImage(context: Context, image: String): Unit? {
+        return try {
+            withContext(Dispatchers.IO) {
+                val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
+                val response = retrofitAPI.updateImage("bearer ${TokenManager.accessToken}", ImageRequest(image))
+                if (response.isSuccessful) {
+                    response.body()
+                } else if (response.code() == 401) {
+                    val getRefresh = Util.getRefresh()
+                    if (getRefresh != null) {
+                        TokenManager.refreshToken = getRefresh.refreshToken
+                        TokenManager.accessToken = getRefresh.accessToken
+                        updateImage(context, image)
+                    } else {
+                        TokenManager.refreshToken = ""
+                        TokenManager.accessToken = ""
+                        startActivity(Intent(context, LoginActivity::class.java))
+                        finishAffinity()
+                        null
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "업로드를 실패하였습니다", Toast.LENGTH_SHORT).show()
+                    }
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "업로드를 실패하였습니다", Toast.LENGTH_SHORT).show()
+            }
+            null
+        }
+    }
+
+    private suspend fun deleteUser(context: Context): UserResponse? {
+        return try {
+            withContext(Dispatchers.IO) {
+                val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
+                val response = retrofitAPI.deleteUser("bearer ${TokenManager.accessToken}")
+                if (response.isSuccessful) {
+                    response.body()
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "회원탈퇴를 실패하였습니다", Toast.LENGTH_SHORT).show()
+                    }
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "회원탈퇴를 실패하였습니다", Toast.LENGTH_SHORT).show()
+            }
+            null
+        }
+    }
+
+    private suspend fun leavePlan(context: Context): PlanResponse? {
+        return try {
+            withContext(Dispatchers.IO) {
+                val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
+                val response = retrofitAPI.leavePlan("bearer ${TokenManager.accessToken}")
+                if (response.isSuccessful) {
+                    response.body()
+                } else if (response.code() == 401) {
+                    val getRefresh = Util.getRefresh()
+                    if (getRefresh != null) {
+                        TokenManager.refreshToken = getRefresh.refreshToken
+                        TokenManager.accessToken = getRefresh.accessToken
+                        leavePlan(context)
+                    } else {
+                        TokenManager.refreshToken = ""
+                        TokenManager.accessToken = ""
+                        startActivity(Intent(context, LoginActivity::class.java))
+                        finishAffinity()
+                        null
+                    }
+                } else if (response.code() == 404) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "약속이 없습니다", Toast.LENGTH_SHORT).show()
+                    }
+                    null
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "약속 나가기를 실패하셨습니다", Toast.LENGTH_SHORT).show()
+                    }
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "약속 나가기를 실패하셨습니다", Toast.LENGTH_SHORT).show()
+            }
+            null
+        }
+    }
+
 }
