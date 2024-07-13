@@ -19,6 +19,7 @@ import com.seogaemo.android_adego.network.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStream
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -100,5 +101,12 @@ object Util {
         customDialog.show()
     }
 
+    fun convertDateFormat(inputDate: String, inputFormat: String = "yyyy-MM-dd", outputFormat: String = "yyyy년 M월 d일"): String {
+        val formatter = DateTimeFormatter.ofPattern(inputFormat)
+        val date = LocalDate.parse(inputDate, formatter)
+
+        val outputFormatter = DateTimeFormatter.ofPattern(outputFormat)
+        return date.format(outputFormatter)
+    }
 
 }
