@@ -2,6 +2,7 @@ package com.seogaemo.android_adego.util
 
 import android.app.Dialog
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
@@ -108,5 +109,8 @@ object Util {
         val outputFormatter = DateTimeFormatter.ofPattern(outputFormat)
         return date.format(outputFormatter)
     }
+
+    fun Float.fromDpToPx(): Int =
+        (this * Resources.getSystem().displayMetrics.density).toInt()
 
 }
