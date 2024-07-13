@@ -1,7 +1,9 @@
 package com.seogaemo.android_adego.network
 
+import com.seogaemo.android_adego.data.AddressResponse
 import com.seogaemo.android_adego.data.ImageRequest
 import com.seogaemo.android_adego.data.NameRequest
+import com.seogaemo.android_adego.data.PlanRequest
 import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.data.SignInRequest
 import com.seogaemo.android_adego.data.SignInResponse
@@ -14,6 +16,7 @@ import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Query
 
 
 interface RetrofitAPI {
@@ -57,5 +60,17 @@ interface RetrofitAPI {
     @DELETE("plan")
     suspend fun leavePlan(
         @Header("Authorization") authorization: String,
+    ): Response<PlanResponse>
+
+    @GET("address/search")
+    suspend fun searchAddress(
+        @Header("Authorization") authorization: String,
+        @Query("query") query: String
+    ): Response<AddressResponse>
+
+    @POST("plan")
+    suspend fun setPlan(
+        @Header("Authorization") authorization: String,
+        @Body body: PlanRequest
     ): Response<PlanResponse>
 }
