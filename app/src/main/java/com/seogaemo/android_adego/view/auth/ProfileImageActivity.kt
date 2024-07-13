@@ -5,8 +5,6 @@ import android.content.Intent
 import android.graphics.Paint
 import android.net.Uri
 import android.os.Bundle
-import android.util.Base64
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -16,17 +14,18 @@ import com.bumptech.glide.Glide
 import com.seogaemo.android_adego.data.ImageRequest
 import com.seogaemo.android_adego.data.NameRequest
 import com.seogaemo.android_adego.data.UserResponse
+import com.seogaemo.android_adego.database.SharedPreference
 import com.seogaemo.android_adego.database.TokenManager
 import com.seogaemo.android_adego.databinding.ActivityProfileImageBinding
 import com.seogaemo.android_adego.network.RetrofitAPI
 import com.seogaemo.android_adego.network.RetrofitClient
 import com.seogaemo.android_adego.util.Util
+import com.seogaemo.android_adego.util.Util.uriToBase64
 import com.seogaemo.android_adego.view.main.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.InputStream
 
 
 class ProfileImageActivity : AppCompatActivity() {
@@ -81,10 +80,7 @@ class ProfileImageActivity : AppCompatActivity() {
                 val isSuccess = updateName(this@ProfileImageActivity, intent.getStringExtra("name")!!) != null
                 withContext(Dispatchers.Main) {
                     if (isSuccess) {
-                        val sharedPreference = getSharedPreferences("SharedPreference", MODE_PRIVATE)
-                        val editor = sharedPreference.edit()
-                        editor.putBoolean("isFirst", false)
-                        editor.apply()
+                        SharedPreference.isFirst = false
 
                         startActivity(Intent(this@ProfileImageActivity, MainActivity::class.java))
                         finishAffinity()
@@ -93,16 +89,6 @@ class ProfileImageActivity : AppCompatActivity() {
                     }
                 }
             }
-        }
-    }
-
-    private fun uriToBase64(context: Context, uri: Uri): String? {
-        val contentResolver = context.contentResolver
-        val inputStream: InputStream? = contentResolver.openInputStream(uri)
-
-        return inputStream?.use {
-            val byteArray = it.readBytes()
-            Base64.encodeToString(byteArray, Base64.DEFAULT)
         }
     }
 
