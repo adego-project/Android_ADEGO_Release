@@ -73,4 +73,10 @@ interface RetrofitAPI {
         @Header("Authorization") authorization: String,
         @Body body: PlanRequest
     ): Response<PlanResponse>
+
+
+    @GET("plan")
+    suspend fun getPlan(
+        @Header("Authorization") authorization: String,
+    ): Response<PlanResponse>
 }
