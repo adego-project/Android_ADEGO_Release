@@ -52,7 +52,7 @@ class ProfileNameActivity : AppCompatActivity() {
         binding.nextButton.setOnClickListener {
             startActivity(
                 Intent(this@ProfileNameActivity, ProfileImageActivity::class.java).apply
-                { this.putExtra("name", binding.nameInput.text) }
+                { this.putExtra("name", binding.nameInput.text.toString()) }
             )
         }
 
