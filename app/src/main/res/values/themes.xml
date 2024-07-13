@@ -4,7 +4,26 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:statusBarColor">@color/gray10</item>
         <item name="colorControlActivated">@color/gray100</item>
+        <item name="android:textCursorDrawable">@color/gray100</item>
+        <item name="android:textColorHighlight">@color/gray40</item>
+    </style>
+
+    <style name="MyBase.TimePicker" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:background">@color/gray10</item>
+        <item name="android:textColor">@color/gray100</item>
+        <item name="android:colorAccent">@color/gray100</item>
+        <item name="android:textColorPrimary">@color/gray100</item>
+        <item name="colorControlNormal">@color/gray30</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColorSecondary">@color/gray40</item>
+        <item name="android:fontFamily">@font/regular</item>
+    </style>
+
+    <style name="CalenderViewWeekCustomText" parent="android:TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">@color/gray60</item>
+        <item name="android:textSize">14sp</item>
     </style>
 
     <style name="Theme.Android_ADEGO" parent="Base.Theme.Android_ADEGO" />
+
 </resources>
