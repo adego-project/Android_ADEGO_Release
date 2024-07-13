@@ -23,6 +23,7 @@ import com.seogaemo.android_adego.database.TokenManager
 import com.seogaemo.android_adego.databinding.ActivityLoginBinding
 import com.seogaemo.android_adego.network.RetrofitAPI
 import com.seogaemo.android_adego.network.RetrofitClient
+import com.seogaemo.android_adego.util.Util.getUser
 import com.seogaemo.android_adego.view.main.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -169,28 +170,6 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-    }
-
-    private suspend fun getUser(context: Context): UserResponse? {
-        return try {
-            withContext(Dispatchers.IO) {
-                val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
-                val response = retrofitAPI.getUser("bearer ${TokenManager.accessToken}")
-                if (response.isSuccessful) {
-                    response.body()
-                } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "정보 조회를 실패하였습니다", Toast.LENGTH_SHORT).show()
-                    }
-                    null
-                }
-            }
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, "정보 조회를 실패하였습니다", Toast.LENGTH_SHORT).show()
-            }
-            null
-        }
     }
 
 }
