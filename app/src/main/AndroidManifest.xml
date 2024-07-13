@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" >
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -16,6 +16,10 @@
         android:theme="@style/Theme.Android_ADEGO"
         tools:targetApi="31" >
         <activity
+            android:name=".view.auth.ProfileImageActivity"
+            android:exported="false" />
+        <activity
+            android:windowSoftInputMode="adjustResize"
             android:name=".view.auth.ProfileNameActivity"
             android:exported="false" />
         <activity
