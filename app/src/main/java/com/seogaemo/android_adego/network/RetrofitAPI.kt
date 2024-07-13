@@ -2,15 +2,18 @@ package com.seogaemo.android_adego.network
 
 import com.seogaemo.android_adego.data.ImageRequest
 import com.seogaemo.android_adego.data.NameRequest
+import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.data.SignInRequest
 import com.seogaemo.android_adego.data.SignInResponse
 import com.seogaemo.android_adego.data.UserResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.PUT
 
 
 interface RetrofitAPI {
@@ -35,7 +38,7 @@ interface RetrofitAPI {
         @Body body: NameRequest
     ): Response<UserResponse>
 
-    @POST("user/profile-image")
+    @PUT("user/profile-image")
     suspend fun updateImage(
         @Header("Authorization") authorization: String,
         @Body body: ImageRequest
@@ -45,4 +48,14 @@ interface RetrofitAPI {
     suspend fun getRefresh(
         @Header("Authorization") authorization: String,
     ): Response<SignInResponse>
+
+    @DELETE("user")
+    suspend fun deleteUser(
+        @Header("Authorization") authorization: String,
+    ): Response<UserResponse>
+
+    @DELETE("plan")
+    suspend fun leavePlan(
+        @Header("Authorization") authorization: String,
+    ): Response<PlanResponse>
 }
