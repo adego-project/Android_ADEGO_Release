@@ -14,23 +14,28 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Android_ADEGO"
-        tools:targetApi="31" >
+        tools:targetApi="31">
+        <activity
+            android:name=".view.main.SettingActivity"
+            android:exported="false" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/MAPS_API_KEY" />
+
         <activity
             android:name=".view.auth.ProfileImageActivity"
             android:exported="false" />
         <activity
-            android:windowSoftInputMode="adjustResize"
             android:name=".view.auth.ProfileNameActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".view.auth.LoginActivity"
             android:exported="false" />
         <activity
             android:name=".view.main.SplashActivity"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
