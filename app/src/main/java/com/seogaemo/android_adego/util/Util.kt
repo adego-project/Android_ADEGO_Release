@@ -1,13 +1,17 @@
 package com.seogaemo.android_adego.util
 
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
+import android.content.Context.INPUT_METHOD_SERVICE
+import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.util.Base64
 import android.view.Window
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
@@ -17,12 +21,14 @@ import com.seogaemo.android_adego.data.UserResponse
 import com.seogaemo.android_adego.database.TokenManager
 import com.seogaemo.android_adego.network.RetrofitAPI
 import com.seogaemo.android_adego.network.RetrofitClient
+import com.seogaemo.android_adego.view.auth.LoginActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
 
 object Util {
     suspend fun getRefresh (): SignInResponse? {
@@ -61,13 +67,26 @@ object Util {
         }
     }
 
-    suspend fun getUser(context: Context): UserResponse? {
+    suspend fun getUser(activity: Activity, context: Context): UserResponse? {
         return try {
             withContext(Dispatchers.IO) {
                 val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
                 val response = retrofitAPI.getUser("bearer ${TokenManager.accessToken}")
                 if (response.isSuccessful) {
                     response.body()
+                } else if (response.code() == 401) {
+                    val getRefresh = getRefresh()
+                    if (getRefresh != null) {
+                        TokenManager.refreshToken = getRefresh.refreshToken
+                        TokenManager.accessToken = getRefresh.accessToken
+                        getUser(activity, context)
+                    } else {
+                        TokenManager.refreshToken = ""
+                        TokenManager.accessToken = ""
+                        activity.startActivity(Intent(context, LoginActivity::class.java))
+                        activity.finishAffinity()
+                        null
+                    }
                 } else {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(context, "정보 조회를 실패하였습니다", Toast.LENGTH_SHORT).show()
