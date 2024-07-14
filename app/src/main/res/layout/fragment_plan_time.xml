@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="약속 시간 이후 30분 동안 알림 발송이 가능합니다."
+        android:text="약속 시간 전후 30분 동안 알림 발송이 가능합니다."
         android:textColor="@color/gray60"
         app:layout_constraintStart_toStartOf="@+id/textView"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
