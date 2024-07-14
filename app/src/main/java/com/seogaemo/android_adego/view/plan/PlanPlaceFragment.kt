@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.seogaemo.android_adego.data.AddressResponse
 import com.seogaemo.android_adego.database.TokenManager
@@ -105,16 +104,10 @@ class PlanPlaceFragment : Fragment() {
                         null
                     }
                 } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "해당하는 주소가 없습니다", Toast.LENGTH_SHORT).show()
-                    }
                     null
                 }
             }
         } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, "해당하는 주소가 없습니다", Toast.LENGTH_SHORT).show()
-            }
             null
         }
     }
