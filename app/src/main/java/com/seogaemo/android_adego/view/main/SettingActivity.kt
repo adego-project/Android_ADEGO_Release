@@ -177,6 +177,19 @@ class SettingActivity : AppCompatActivity() {
                 val response = retrofitAPI.deleteUser("bearer ${TokenManager.accessToken}")
                 if (response.isSuccessful) {
                     response.body()
+                } else if (response.code() == 401) {
+                    val getRefresh = Util.getRefresh()
+                    if (getRefresh != null) {
+                        TokenManager.refreshToken = getRefresh.refreshToken
+                        TokenManager.accessToken = getRefresh.accessToken
+                        deleteUser(context)
+                    } else {
+                        TokenManager.refreshToken = ""
+                        TokenManager.accessToken = ""
+                        startActivity(Intent(context, LoginActivity::class.java))
+                        finishAffinity()
+                        null
+                    }
                 } else {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(context, "회원탈퇴를 실패하였습니다", Toast.LENGTH_SHORT).show()
