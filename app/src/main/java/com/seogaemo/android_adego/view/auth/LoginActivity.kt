@@ -18,7 +18,6 @@ import com.kakao.sdk.user.UserApiClient
 import com.seogaemo.android_adego.BuildConfig
 import com.seogaemo.android_adego.data.SignInRequest
 import com.seogaemo.android_adego.data.SignInResponse
-import com.seogaemo.android_adego.data.UserResponse
 import com.seogaemo.android_adego.database.TokenManager
 import com.seogaemo.android_adego.databinding.ActivityLoginBinding
 import com.seogaemo.android_adego.network.RetrofitAPI
@@ -159,7 +158,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun finishLogin(context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
-            val isFirst = getUser(context)?.name.isNullOrEmpty()
+            val isFirst = getUser(this@LoginActivity, context)?.name.isNullOrEmpty()
             withContext(Dispatchers.Main) {
                 if (!isFirst) {
                     startActivity(Intent(context, MainActivity::class.java))
