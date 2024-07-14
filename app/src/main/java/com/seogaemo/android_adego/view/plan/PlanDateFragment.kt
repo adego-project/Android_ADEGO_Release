@@ -32,7 +32,7 @@ class PlanDateFragment : Fragment() {
         binding.calendarView.apply {
             this.addDecorators(PastDateDecorator(requireContext()), FutureDateDecorator(requireContext()))
             this.setTitleFormatter { day ->
-                val calendarHeaderElements = day.toString().split("-")
+                val calendarHeaderElements = day.date.toString().split("-")
                 val calendarHeaderBuilder = StringBuilder()
 
                 calendarHeaderBuilder.append(calendarHeaderElements[0]).append("년 ")
@@ -43,8 +43,8 @@ class PlanDateFragment : Fragment() {
             this.setOnDateChangedListener { _, date, _ ->
                 val activity = (requireActivity() as PlanActivity)
 
-                activity.planDate = "${date}T"
-                activity.addFragment(PlanDateFragment())
+                activity.planDate = "${date.date}"
+                activity.addFragment(PlanTimeFragment())
             }
         }
 
