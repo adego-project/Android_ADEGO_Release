@@ -52,7 +52,7 @@ class PlanActivity : AppCompatActivity() {
     }
 
     suspend fun setPlan(context: Context): PlanResponse? {
-        val planRequest = PlanRequest(planDate+planTime, planAddress, planName)
+        val planRequest = PlanRequest(planDate+"T"+planTime, planAddress, planName)
         if (checkPropertiesInitialized()) {
             return try {
                 withContext(Dispatchers.IO) {
