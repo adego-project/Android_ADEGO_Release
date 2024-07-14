@@ -16,6 +16,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import com.seogaemo.android_adego.R
+import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.data.SignInResponse
 import com.seogaemo.android_adego.data.UserResponse
 import com.seogaemo.android_adego.database.TokenManager
@@ -48,11 +49,11 @@ object Util {
     }
 
     fun parseDateTime(dateTimeString: String): Pair<String, String> {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'H:m:ss")
         val dateTime = LocalDateTime.parse(dateTimeString, formatter)
 
         val date = dateTime.format(DateTimeFormatter.ofPattern("yyyy년 M월 d일"))
-        val time = dateTime.format(DateTimeFormatter.ofPattern("a hh시 mm분"))
+        val time = dateTime.format(DateTimeFormatter.ofPattern("a h시 m분"))
 
         return Pair(date, time)
     }
@@ -138,6 +139,46 @@ object Util {
             activity.currentFocus?.windowToken,
             InputMethodManager.HIDE_NOT_ALWAYS
         )
+    }
+
+    suspend fun getPlan(activity: Activity, context: Context): PlanResponse? {
+        return try {
+            withContext(Dispatchers.IO) {
+                val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
+                val response = retrofitAPI.getPlan("bearer ${TokenManager.accessToken}")
+                if (response.isSuccessful) {
+                    response.body()
+                } else if (response.code() == 401) {
+                    val getRefresh = Util.getRefresh()
+                    if (getRefresh != null) {
+                        TokenManager.refreshToken = getRefresh.refreshToken
+                        TokenManager.accessToken = getRefresh.accessToken
+                        getPlan(activity, context)
+                    } else if (response.code() == 404) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, "약속이 없습니다", Toast.LENGTH_SHORT).show()
+                        }
+                        null
+                    } else {
+                        TokenManager.refreshToken = ""
+                        TokenManager.accessToken = ""
+                        activity.startActivity(Intent(context, LoginActivity::class.java))
+                        activity.finishAffinity()
+                        null
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "약속이 없습니다", Toast.LENGTH_SHORT).show()
+                    }
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "네트워크 에러", Toast.LENGTH_SHORT).show()
+            }
+            null
+        }
     }
 
 }
