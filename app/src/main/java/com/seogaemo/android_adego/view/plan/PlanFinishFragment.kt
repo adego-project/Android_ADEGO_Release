@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.databinding.FragmentPlanFinishBinding
+import com.seogaemo.android_adego.util.Util.convertDateFormat
 import com.seogaemo.android_adego.view.main.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +46,9 @@ class PlanFinishFragment : Fragment() {
                 if (isSuccess) {
                     activity.findViewById<LinearLayout>(R.id.back_button).visibility = View.GONE
 
-                    binding.dateText.text = activity.planDate
+                    binding.nameText.text = activity.planName
+
+                    binding.dateText.text = convertDateFormat(activity.planDate)
                     binding.timeText.text = if (time[0].toInt() > 11) {
                         "오후 ${time[0].toInt() % 12}시 ${time[1]}분"
                     } else {
