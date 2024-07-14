@@ -113,4 +113,12 @@ object Util {
     fun Float.fromDpToPx(): Int =
         (this * Resources.getSystem().displayMetrics.density).toInt()
 
+    fun keyboardDown(activity: Activity) {
+        val manager = activity.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager?
+        manager!!.hideSoftInputFromWindow(
+            activity.currentFocus?.windowToken,
+            InputMethodManager.HIDE_NOT_ALWAYS
+        )
+    }
+
 }
