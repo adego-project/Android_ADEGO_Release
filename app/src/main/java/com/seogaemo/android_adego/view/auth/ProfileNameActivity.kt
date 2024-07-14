@@ -33,7 +33,11 @@ class ProfileNameActivity : AppCompatActivity() {
 
         val isSetting = intent.getBooleanExtra("isSetting" ,false)
         if (isSetting) {
+            binding.mainButtonText.text = "완료"
+            binding.nextIcon.visibility = View.GONE
+
             binding.backButton.setOnClickListener {
+                startActivity(Intent(this@ProfileNameActivity, SettingActivity::class.java))
                 finish()
             }
 
@@ -42,10 +46,13 @@ class ProfileNameActivity : AppCompatActivity() {
 
                 CoroutineScope(Dispatchers.IO).launch {
                     val isSuccess = updateName(this@ProfileNameActivity, name) != null
-                    if (isSuccess) finish()
+                    if (isSuccess) {
+                        startActivity(Intent(this@ProfileNameActivity, SettingActivity::class.java))
+                        finish()
+                    }
                 }
             }
-
+            onBackPressedDispatcher.addCallback(this, onBackSettingPressedCallback)
         } else {
             binding.backButton.setOnClickListener {
                 startActivity(Intent(this@ProfileNameActivity, LoginActivity::class.java))
@@ -59,7 +66,7 @@ class ProfileNameActivity : AppCompatActivity() {
                 )
             }
 
-            onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
+            onBackPressedDispatcher.addCallback(this, onBackProfilePressedCallback)
         }
 
         binding.nameInput.apply {
@@ -95,10 +102,17 @@ class ProfileNameActivity : AppCompatActivity() {
 
     }
 
-    private val onBackPressedCallback = object : OnBackPressedCallback(true) {
+    private val onBackProfilePressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             startActivity(Intent(this@ProfileNameActivity, LoginActivity::class.java))
             finishAffinity()
+        }
+    }
+
+    private val onBackSettingPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            startActivity(Intent(this@ProfileNameActivity, SettingActivity::class.java))
+            finish()
         }
     }
 
