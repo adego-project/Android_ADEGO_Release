@@ -7,7 +7,9 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.seogaemo.android_adego.data.Address
 import com.seogaemo.android_adego.databinding.PlaceItemBinding
+import com.seogaemo.android_adego.util.Util.keyboardDown
 import com.seogaemo.android_adego.view.plan.PlanActivity
+import com.seogaemo.android_adego.view.plan.PlanFinishFragment
 
 
 class PlaceAdapter(private val addressList: List<Address>): RecyclerView.Adapter<PlaceAdapter.PlaceViewHolder>() {
@@ -23,9 +25,10 @@ class PlaceAdapter(private val addressList: List<Address>): RecyclerView.Adapter
                     val address = item.roadAddressName.ifBlank { item.addressName }
                     binding.locationDetailsName.text = address
                     activity.apply {
+                        keyboardDown(this)
                         this.planPlace = addressList[handler.adapterPosition].placeName
                         this.planAddress = address
-                        this.finishAffinity()
+                        this.addFragment(PlanFinishFragment())
                     }
                 }
 
@@ -47,9 +50,7 @@ class PlaceAdapter(private val addressList: List<Address>): RecyclerView.Adapter
             binding.locationName.text = address.placeName
 
             if (address.roadAddressName.isNotBlank() || address.addressName.isNotBlank()) {
-                val textToShow = if (address.roadAddressName.isNotBlank()) {
-                    address.roadAddressName
-                } else {
+                val textToShow = address.roadAddressName.ifBlank {
                     address.addressName
                 }
                 binding.locationDetailsName.text = textToShow
