@@ -11,6 +11,7 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity.INPUT_METHOD_SERVICE
 import com.seogaemo.android_adego.databinding.FragmentPlanNameBinding
+import com.seogaemo.android_adego.util.Util.keyboardDown
 
 class PlanNameFragment : Fragment() {
 
@@ -65,6 +66,7 @@ class PlanNameFragment : Fragment() {
 
         binding.nextButton.setOnClickListener {
             val activity = (requireActivity() as PlanActivity)
+            keyboardDown(requireActivity())
 
             activity.planName = binding.nameInput.text.toString()
             activity.addFragment(PlanDateFragment())
