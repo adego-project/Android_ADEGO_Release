@@ -49,7 +49,7 @@ class SettingActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         CoroutineScope(Dispatchers.IO).launch {
-            val userInfo = getUser(this@SettingActivity)
+            val userInfo = getUser(this@SettingActivity, this@SettingActivity)
             withContext(Dispatchers.Main) {
                 binding.nameText.text = userInfo?.name
                 Glide.with(this@SettingActivity)
@@ -67,9 +67,10 @@ class SettingActivity : AppCompatActivity() {
         binding.leavePlanButton.apply {
             this.paintFlags = binding.leavePlanButton.paintFlags or Paint.UNDERLINE_TEXT_FLAG
             this.setOnClickListener {
-                createDialog(this@SettingActivity, "약속에서\n나가시겠습니까?", "나가기") {
+                createDialog(this@SettingActivity, "약속에서\n나가시겠습니까?", "나가기") { dialog ->
                     CoroutineScope(Dispatchers.IO).launch {
                         leavePlan(this@SettingActivity)
+                        dialog.dismiss()
                     }
                 }
             }
@@ -78,10 +79,11 @@ class SettingActivity : AppCompatActivity() {
         binding.logoutButton.apply {
             this.paintFlags = binding.logoutButton.paintFlags or Paint.UNDERLINE_TEXT_FLAG
             this.setOnClickListener {
-                createDialog(this@SettingActivity, "계정에서\n로그아웃 하시겠습니까?", "로그아웃") {
+                createDialog(this@SettingActivity, "계정에서\n로그아웃 하시겠습니까?", "로그아웃") { dialog ->
                     SharedPreference.isFirst = true
                     TokenManager.refreshToken = ""
                     TokenManager.accessToken = ""
+                    dialog.dismiss()
 
                     startActivity(Intent(this@SettingActivity, LoginActivity::class.java))
                     finishAffinity()
@@ -100,11 +102,12 @@ class SettingActivity : AppCompatActivity() {
                                 SharedPreference.isFirst = true
                                 TokenManager.refreshToken = ""
                                 TokenManager.accessToken = ""
+                                customDialog.dismiss()
 
                                 startActivity(Intent(this@SettingActivity, LoginActivity::class.java))
                                 finishAffinity()
                             } else {
-                                customDialog.cancel()
+                                customDialog.dismiss()
                             }
                         }
                     }
@@ -118,6 +121,7 @@ class SettingActivity : AppCompatActivity() {
                 startActivity(
                     Intent(this@SettingActivity, ProfileNameActivity::class.java).apply {
                         putExtra("isSetting", true)
+                        finish()
                     }
                 )
             }
