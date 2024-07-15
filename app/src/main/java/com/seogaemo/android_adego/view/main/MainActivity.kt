@@ -62,7 +62,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onResume() {
         super.onResume()
+        CoroutineScope(Dispatchers.IO).launch {
+            val plan = getPlan(this@MainActivity, this@MainActivity)
+            val planStatus = determinePlanStatus(plan)
 
+            withContext(Dispatchers.Main) { setBottomLayout(planStatus, plan) }
+        }
         mapFragment.onResume()
     }
 
@@ -85,6 +90,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
+    private fun determinePlanStatus(plan: PlanResponse?): PlanStatus {
+        return if (plan == null) {
+            PlanStatus.NO_PROMISE
+        } else if (plan.isAlarmAvailable) {
+            PlanStatus.ACTIVE
+        } else {
+            PlanStatus.DISABLED
+        }
+    }
 
     private fun calculateDifference(input: String): String {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'H:m:s")
