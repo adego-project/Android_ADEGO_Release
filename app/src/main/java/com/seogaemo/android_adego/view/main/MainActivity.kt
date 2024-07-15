@@ -86,6 +86,28 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
 
+    private fun calculateDifference(input: String): String {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'H:m:s")
+        val inputDateTime = LocalDateTime.parse(input, formatter)
+
+        val koreaZone = ZoneId.of("Asia/Seoul")
+        val currentKoreaDateTime = ZonedDateTime.now(koreaZone).toLocalDateTime()
+
+        val duration = Duration.between(currentKoreaDateTime, inputDateTime)
+
+        val days = duration.toDays()
+        val hours = duration.toHours() % 24
+        val minutes = duration.toMinutes() % 60
+
+        return if (days == 0L) {
+            "${hours}시간 ${minutes}분 뒤 시작돼요"
+        } else if (hours == 0L) {
+            "${minutes}분 뒤 시작돼요"
+        } else {
+            "${days}일 ${hours}시간 ${minutes}분 뒤 시작돼요"
+        }
+    }
+
     private fun setBottomLayout(state: PlanStatus, promiseInfo: PlanResponse? = null) {
         val inflater: LayoutInflater = layoutInflater
         val view = when (state) {
@@ -110,6 +132,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     this.locationText.text = promiseInfo.place.name
 
+                    this.nextText.text = calculateDifference(promiseInfo.date)
                 }
             }
             PlanStatus.ACTIVE -> {
