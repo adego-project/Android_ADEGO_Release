@@ -2,16 +2,21 @@ package com.seogaemo.android_adego.view.main
 
 import android.content.Intent
 import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.MarkerOptions
 import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.data.PlanStatus
@@ -19,30 +24,46 @@ import com.seogaemo.android_adego.databinding.ActiveViewBinding
 import com.seogaemo.android_adego.databinding.ActivityMainBinding
 import com.seogaemo.android_adego.databinding.DisabledViewBinding
 import com.seogaemo.android_adego.databinding.NoPromiseViewBinding
+import com.seogaemo.android_adego.util.Util.getPlan
 import com.seogaemo.android_adego.util.Util.parseDateTime
 import com.seogaemo.android_adego.view.alarm.AlarmActivity
 import com.seogaemo.android_adego.view.plan.PlanActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var binding: ActivityMainBinding
+
     private lateinit var mMap: GoogleMap
+    private lateinit var mapFragment: SupportMapFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this@MainActivity)
-
-        setBottomLayout(PlanStatus.NO_PROMISE)
 
         binding.settingButton.setOnClickListener {
             startActivity(Intent(this@MainActivity, SettingActivity::class.java))
         }
 
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        mapFragment.onResume()
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -62,6 +83,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(37.570454631, 126.992134289), 16.0F))
     }
+
+
 
     private fun setBottomLayout(state: PlanStatus, promiseInfo: PlanResponse? = null) {
         val inflater: LayoutInflater = layoutInflater
@@ -86,6 +109,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                     this.timeText.text = time
 
                     this.locationText.text = promiseInfo.place.name
+
                 }
             }
             PlanStatus.ACTIVE -> {
@@ -115,5 +139,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.includeContainer.removeAllViews()
         binding.includeContainer.addView(view.root)
 
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mapFragment.onPause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mapFragment.onDestroy()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        mapFragment.onLowMemory()
     }
 }
