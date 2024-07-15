@@ -129,7 +129,6 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:text="40일 1시간 35분 뒤 시작돼요"
                     android:id="@+id/next_text"
                     android:layout_width="match_parent"
                     android:layout_height="24dp"
