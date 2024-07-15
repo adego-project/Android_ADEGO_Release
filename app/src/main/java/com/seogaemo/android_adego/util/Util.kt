@@ -149,15 +149,12 @@ object Util {
                 if (response.isSuccessful) {
                     response.body()
                 } else if (response.code() == 401) {
-                    val getRefresh = Util.getRefresh()
+                    val getRefresh = getRefresh()
                     if (getRefresh != null) {
                         TokenManager.refreshToken = getRefresh.refreshToken
                         TokenManager.accessToken = getRefresh.accessToken
                         getPlan(activity, context)
                     } else if (response.code() == 404) {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(context, "약속이 없습니다", Toast.LENGTH_SHORT).show()
-                        }
                         null
                     } else {
                         TokenManager.refreshToken = ""
@@ -167,9 +164,6 @@ object Util {
                         null
                     }
                 } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "약속이 없습니다", Toast.LENGTH_SHORT).show()
-                    }
                     null
                 }
             }
