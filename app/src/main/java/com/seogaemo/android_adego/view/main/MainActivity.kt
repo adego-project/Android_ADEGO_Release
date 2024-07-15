@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onResume() {
         super.onResume()
         CoroutineScope(Dispatchers.IO).launch {
-            val plan = getPlan(this@MainActivity, this@MainActivity)
+            val plan = getPlan(this@MainActivity)
             val planStatus = determinePlanStatus(plan)
 
             withContext(Dispatchers.Main) { setBottomLayout(planStatus, plan) }

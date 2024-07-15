@@ -68,7 +68,7 @@ object Util {
         }
     }
 
-    suspend fun getUser(activity: Activity, context: Context): UserResponse? {
+    suspend fun getUser(activity: Activity): UserResponse? {
         return try {
             withContext(Dispatchers.IO) {
                 val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
@@ -80,24 +80,24 @@ object Util {
                     if (getRefresh != null) {
                         TokenManager.refreshToken = getRefresh.refreshToken
                         TokenManager.accessToken = getRefresh.accessToken
-                        getUser(activity, context)
+                        getUser(activity)
                     } else {
                         TokenManager.refreshToken = ""
                         TokenManager.accessToken = ""
-                        activity.startActivity(Intent(context, LoginActivity::class.java))
+                        activity.startActivity(Intent(activity, LoginActivity::class.java))
                         activity.finishAffinity()
                         null
                     }
                 } else {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(context, "정보 조회를 실패하였습니다", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(activity, "정보 조회를 실패하였습니다", Toast.LENGTH_SHORT).show()
                     }
                     null
                 }
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "정보 조회를 실패하였습니다", Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, "정보 조회를 실패하였습니다", Toast.LENGTH_SHORT).show()
             }
             null
         }
@@ -141,7 +141,7 @@ object Util {
         )
     }
 
-    suspend fun getPlan(activity: Activity, context: Context): PlanResponse? {
+    suspend fun getPlan(activity: Activity): PlanResponse? {
         return try {
             withContext(Dispatchers.IO) {
                 val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
@@ -153,13 +153,13 @@ object Util {
                     if (getRefresh != null) {
                         TokenManager.refreshToken = getRefresh.refreshToken
                         TokenManager.accessToken = getRefresh.accessToken
-                        getPlan(activity, context)
+                        getPlan(activity)
                     } else if (response.code() == 404) {
                         null
                     } else {
                         TokenManager.refreshToken = ""
                         TokenManager.accessToken = ""
-                        activity.startActivity(Intent(context, LoginActivity::class.java))
+                        activity.startActivity(Intent(activity, LoginActivity::class.java))
                         activity.finishAffinity()
                         null
                     }
@@ -169,7 +169,7 @@ object Util {
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "네트워크 에러", Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, "네트워크 에러", Toast.LENGTH_SHORT).show()
             }
             null
         }

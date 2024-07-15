@@ -23,7 +23,7 @@ class AlarmActivity : AppCompatActivity() {
         }
 
         CoroutineScope(Dispatchers.IO).launch {
-            val planResponse = getPlan(this@AlarmActivity, this@AlarmActivity)
+            val planResponse = getPlan(this@AlarmActivity)
             if (planResponse != null) {
                 withContext(Dispatchers.Main) {
                     binding.friendsList.apply {

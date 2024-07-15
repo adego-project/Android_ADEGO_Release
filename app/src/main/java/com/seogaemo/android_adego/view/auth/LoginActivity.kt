@@ -158,7 +158,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun finishLogin(context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
-            val isFirst = getUser(this@LoginActivity, context)?.name.isNullOrEmpty()
+            val isFirst = getUser(this@LoginActivity)?.name.isNullOrEmpty()
             withContext(Dispatchers.Main) {
                 if (!isFirst) {
                     startActivity(Intent(context, MainActivity::class.java))

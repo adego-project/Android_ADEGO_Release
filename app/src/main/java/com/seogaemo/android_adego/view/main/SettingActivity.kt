@@ -49,7 +49,7 @@ class SettingActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         CoroutineScope(Dispatchers.IO).launch {
-            val userInfo = getUser(this@SettingActivity, this@SettingActivity)
+            val userInfo = getUser(this@SettingActivity)
             withContext(Dispatchers.Main) {
                 binding.nameText.text = userInfo?.name
                 Glide.with(this@SettingActivity)
