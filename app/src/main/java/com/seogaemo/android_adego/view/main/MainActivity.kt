@@ -113,13 +113,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         val hours = duration.toHours() % 24
         val minutes = duration.toMinutes() % 60
 
-        return if (days == 0L) {
-            "${hours}시간 ${minutes}분 뒤 시작돼요"
-        } else if (hours == 0L) {
-            "${minutes}분 뒤 시작돼요"
-        } else {
-            "${days}일 ${hours}시간 ${minutes}분 뒤 시작돼요"
-        }
+        return "${days}일 ${hours}시간 ${minutes}분 뒤 시작돼요"
     }
 
     private fun setBottomLayout(state: PlanStatus, promiseInfo: PlanResponse? = null) {
