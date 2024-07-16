@@ -175,4 +175,6 @@ object Util {
         }
     }
 
+    fun Context.isValidGlideContext() = this !is Activity || (!this.isDestroyed && !this.isFinishing)
+
 }
