@@ -22,6 +22,7 @@ import com.seogaemo.android_adego.network.RetrofitClient
 import com.seogaemo.android_adego.util.Util
 import com.seogaemo.android_adego.util.Util.createDialog
 import com.seogaemo.android_adego.util.Util.getUser
+import com.seogaemo.android_adego.util.Util.isValidGlideContext
 import com.seogaemo.android_adego.util.Util.uriToBase64
 import com.seogaemo.android_adego.view.auth.LoginActivity
 import com.seogaemo.android_adego.view.auth.ProfileNameActivity
@@ -52,11 +53,13 @@ class SettingActivity : AppCompatActivity() {
             val userInfo = getUser(this@SettingActivity)
             withContext(Dispatchers.Main) {
                 binding.nameText.text = userInfo?.name
-                Glide.with(this@SettingActivity)
-                    .load(userInfo?.profileImage)
-                    .centerCrop()
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .into(binding.imageView)
+                if (this@SettingActivity.isValidGlideContext()) {
+                    Glide.with(this@SettingActivity)
+                        .load(userInfo?.profileImage)
+                        .centerCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(binding.imageView)
+                }
             }
         }
 
