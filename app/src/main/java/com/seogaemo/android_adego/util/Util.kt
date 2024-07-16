@@ -6,10 +6,13 @@ import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.Intent
 import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.util.Base64
+import android.view.View
 import android.view.Window
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
@@ -176,5 +179,17 @@ object Util {
     }
 
     fun Context.isValidGlideContext() = this !is Activity || (!this.isDestroyed && !this.isFinishing)
+
+    fun Context.viewToBitmap(view: View): Bitmap {
+        val returnedBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(returnedBitmap)
+        val bgDrawable = view.background
+        if (bgDrawable != null)
+            bgDrawable.draw(canvas)
+        else
+            canvas.drawColor(Color.TRANSPARENT)
+        view.draw(canvas)
+        return returnedBitmap
+    }
 
 }
