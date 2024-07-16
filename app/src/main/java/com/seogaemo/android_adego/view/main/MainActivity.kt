@@ -2,11 +2,8 @@ package com.seogaemo.android_adego.view.main
 
 import android.content.Intent
 import android.content.res.Resources
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -66,7 +63,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             val plan = getPlan(this@MainActivity)
             val planStatus = determinePlanStatus(plan)
 
-            withContext(Dispatchers.Main) { setBottomLayout(planStatus, plan) }
+            withContext(Dispatchers.Main) {
+                setBottomLayout(planStatus, plan)
+                plan?.let {
+                    val place = it.place
+                    mMap.addMarker(
+                        MarkerOptions()
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.default_marker))
+                            .position(LatLng(place.y.toDouble(), place.x.toDouble()))
+                    )
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(place.y.toDouble(), place.x.toDouble()), 16.0F))
+                }
+            }
         }
         mapFragment.onResume()
     }
@@ -88,7 +96,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(37.570454631, 126.992134289), 16.0F))
     }
-
 
     private fun determinePlanStatus(plan: PlanResponse?): PlanStatus {
         return if (plan == null) {
