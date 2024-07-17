@@ -13,7 +13,7 @@ class AlarmAdapter(private val userList: List<UserResponse>): RecyclerView.Adapt
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmViewHolder {
         val binding = AlarmItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return AlarmViewHolder(binding).also { handler->
-            binding.root.apply {
+            binding.root.setOnClickListener {
                 callUser(userList[handler.adapterPosition])
             }
         }
