@@ -3,6 +3,7 @@ package com.seogaemo.android_adego.view.main
 import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -13,6 +14,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.data.PlanResponse
@@ -36,7 +38,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback {
+class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var mMap: GoogleMap
@@ -94,7 +96,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             Toast.makeText(this@MainActivity, "지도 불러오기 실패 다시 시도해주세요", Toast.LENGTH_SHORT).show()
         }
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(37.570454631, 126.992134289), 16.0F))
+        mMap.setOnMarkerClickListener(this@MainActivity)
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(37.627717208553854, 126.92327919682702), 16.0F))
     }
 
     private fun determinePlanStatus(plan: PlanResponse?): PlanStatus {
@@ -192,5 +195,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onLowMemory() {
         super.onLowMemory()
         mapFragment.onLowMemory()
+    }
+
+    override fun onMarkerClick(marker: Marker): Boolean {
+        if (this::mMap.isInitialized) {
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.position, 16.0F))
+            return true
+        } else {
+            return false
+        }
     }
 }
