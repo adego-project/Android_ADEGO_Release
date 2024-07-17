@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.seogaemo.android_adego.databinding.ActivityAlarmBinding
-import com.seogaemo.android_adego.util.Util.fromDpToPx
 import com.seogaemo.android_adego.util.Util.getPlan
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +28,6 @@ class AlarmActivity : AppCompatActivity() {
                     binding.friendsList.apply {
                         this.layoutManager = GridLayoutManager(this@AlarmActivity, 2)
                         this.adapter = AlarmAdapter(planResponse.users)
-                        this.addItemDecoration(EdgeItemDecoration(2, 8f.fromDpToPx()))
                     }
                 }
             }
