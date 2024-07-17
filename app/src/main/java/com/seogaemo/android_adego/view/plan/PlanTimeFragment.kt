@@ -1,12 +1,16 @@
 package com.seogaemo.android_adego.view.plan
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.seogaemo.android_adego.databinding.FragmentPlanTimeBinding
 import com.seogaemo.android_adego.util.Util.convertDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+
 
 class PlanTimeFragment : Fragment() {
 
@@ -36,11 +40,32 @@ class PlanTimeFragment : Fragment() {
             activity.planTime = "${binding.timeView.hour}:${binding.timeView.minute}:00"
             activity.addFragment(PlanPlaceFragment())
         }
+
+        binding.timeView.setOnTimeChangedListener { timeView, hourOfDay, minute ->
+            if (isToday(activity.planDate)) {
+                val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+                val currentMinute = Calendar.getInstance().get(Calendar.MINUTE)
+
+                if (hourOfDay < currentHour || (hourOfDay == currentHour && minute < currentMinute)) {
+                    timeView.hour = currentHour
+                    timeView.minute = currentMinute
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun isToday(inputDate: String): Boolean {
+        val currentDate = LocalDate.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+        val formattedDate = currentDate.format(formatter)
+
+        return formattedDate == inputDate
     }
 
 }
