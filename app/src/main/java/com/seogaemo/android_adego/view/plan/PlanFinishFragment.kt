@@ -44,7 +44,7 @@ class PlanFinishFragment : Fragment() {
             val isSuccess = activity.setPlan(requireContext()) != null
             withContext(Dispatchers.Main) {
                 if (isSuccess) {
-                    activity.findViewById<LinearLayout>(R.id.back_button).visibility = View.GONE
+                    activity.findViewById<LinearLayout>(R.id.back_button).visibility = View.INVISIBLE
 
                     binding.nameText.text = activity.planName
 
