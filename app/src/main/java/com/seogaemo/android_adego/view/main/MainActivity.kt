@@ -67,14 +67,17 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
             withContext(Dispatchers.Main) {
                 setBottomLayout(planStatus, plan)
-                plan?.let {
-                    val place = it.place
-                    mMap.addMarker(
-                        MarkerOptions()
-                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.default_marker))
-                            .position(LatLng(place.y.toDouble(), place.x.toDouble()))
-                    )
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(place.y.toDouble(), place.x.toDouble()), 16.0F))
+                if (::mMap.isInitialized) {
+                    mMap.clear()
+                    plan?.let {
+                        val place = it.place
+                        mMap.addMarker(
+                            MarkerOptions()
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.default_marker))
+                                .position(LatLng(place.y.toDouble(), place.x.toDouble()))
+                        )
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(place.y.toDouble(), place.x.toDouble()), 16.0F))
+                    }
                 }
             }
         }
