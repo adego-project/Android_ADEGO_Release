@@ -3,6 +3,7 @@ package com.seogaemo.android_adego.network
 import com.seogaemo.android_adego.data.AddressResponse
 import com.seogaemo.android_adego.data.ImageRequest
 import com.seogaemo.android_adego.data.NameRequest
+import com.seogaemo.android_adego.data.PostPlanInviteResponse
 import com.seogaemo.android_adego.data.PlanRequest
 import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.data.SignInRequest
@@ -79,4 +80,9 @@ interface RetrofitAPI {
     suspend fun getPlan(
         @Header("Authorization") authorization: String,
     ): Response<PlanResponse>
+
+    @POST("plan/invite")
+    suspend fun postPlanInvite(
+        @Header("Authorization") authorization: String,
+    ): Response<PostPlanInviteResponse>
 }
