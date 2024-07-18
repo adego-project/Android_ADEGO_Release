@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.databinding.FragmentPlanFinishBinding
 import com.seogaemo.android_adego.util.Util.convertDateFormat
+import com.seogaemo.android_adego.util.Util.getLink
 import com.seogaemo.android_adego.view.main.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -60,9 +61,16 @@ class PlanFinishFragment : Fragment() {
                         startActivity(
                             Intent(Intent.ACTION_SEND_MULTIPLE).apply {
                                 type = "text/plain"
-                                val url = ""
-                                val content = "약속에 초대됐어요!\n하단 링크를 통해 어떤 약속인지 확인하세요."
-                                putExtra(Intent.EXTRA_TEXT,"$content\n\n$url")
+
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    val link = getLink(requireActivity())
+                                    if (link != null) {
+                                        withContext(Dispatchers.Main) {
+                                            val content = "약속에 초대됐어요!\n하단 링크를 통해 어떤 약속인지 확인하세요."
+                                            putExtra(Intent.EXTRA_TEXT,"$content\n\n$link")
+                                        }
+                                    }
+                                }
                             }
                         )
                     }
