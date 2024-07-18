@@ -19,6 +19,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import com.seogaemo.android_adego.R
+import com.seogaemo.android_adego.data.PostPlanInviteResponse
 import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.data.SignInResponse
 import com.seogaemo.android_adego.data.UserResponse
@@ -35,7 +36,7 @@ import java.time.format.DateTimeFormatter
 
 
 object Util {
-    suspend fun getRefresh (): SignInResponse? {
+    suspend fun getRefresh(): SignInResponse? {
         return try {
             withContext(Dispatchers.IO) {
                 val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
@@ -190,6 +191,36 @@ object Util {
             canvas.drawColor(Color.TRANSPARENT)
         view.draw(canvas)
         return returnedBitmap
+    }
+
+    suspend fun getLink(activity: Activity): PostPlanInviteResponse? {
+        return try {
+            withContext(Dispatchers.IO) {
+                val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
+                val response = retrofitAPI.postPlanInvite("bearer ${TokenManager.accessToken}")
+                if (response.isSuccessful) {
+                    response.body()
+                } else if (response.code() == 401) {
+                    val getRefresh = getRefresh()
+                    if (getRefresh != null) {
+                        TokenManager.refreshToken = getRefresh.refreshToken
+                        TokenManager.accessToken = getRefresh.accessToken
+                        getUser(activity)
+                        null
+                    } else {
+                        TokenManager.refreshToken = ""
+                        TokenManager.accessToken = ""
+                        activity.startActivity(Intent(activity, LoginActivity::class.java))
+                        activity.finishAffinity()
+                        null
+                    }
+                }else {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 
 }
