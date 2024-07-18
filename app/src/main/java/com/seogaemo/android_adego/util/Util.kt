@@ -19,7 +19,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import com.seogaemo.android_adego.R
-import com.seogaemo.android_adego.data.PostPlanInviteResponse
+import com.seogaemo.android_adego.data.InvitePlanUrlResponse
 import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.data.SignInResponse
 import com.seogaemo.android_adego.data.UserResponse
@@ -193,11 +193,11 @@ object Util {
         return returnedBitmap
     }
 
-    suspend fun getLink(activity: Activity): PostPlanInviteResponse? {
+    suspend fun getLink(activity: Activity): InvitePlanUrlResponse? {
         return try {
             withContext(Dispatchers.IO) {
                 val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
-                val response = retrofitAPI.postPlanInvite("bearer ${TokenManager.accessToken}")
+                val response = retrofitAPI.getInvitePlanUrl("bearer ${TokenManager.accessToken}")
                 if (response.isSuccessful) {
                     response.body()
                 } else if (response.code() == 401) {

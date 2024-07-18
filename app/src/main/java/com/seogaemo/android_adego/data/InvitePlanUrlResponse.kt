@@ -1,5 +1,5 @@
 package com.seogaemo.android_adego.data
 
-data class PostPlanInviteResponse(
+data class InvitePlanUrlResponse(
     val link: String
 )
