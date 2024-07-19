@@ -137,22 +137,25 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 DisabledViewBinding.inflate(inflater, binding.includeContainer, false).apply {
                     this.sharedButton.setOnClickListener {
                         startActivity(
-                            Intent(Intent.ACTION_SEND_MULTIPLE).apply {
-                                type = "text/plain"
+                            Intent.createChooser(
+                                Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                                    type = "text/plain"
 
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    val link = getLink(this@MainActivity)
-                                    if (link != null) {
-                                        withContext(Dispatchers.Main) {
-                                            this@MainActivity.copyToClipboard(link.link)
-                                            Toast.makeText(this@MainActivity, "초대 링크가 클립보드에 복사됐어요", Toast.LENGTH_SHORT).show()
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        val link = getLink(this@MainActivity)
+                                        if (link != null) {
+                                            withContext(Dispatchers.Main) {
+                                                this@MainActivity.copyToClipboard(link.link)
+                                                Toast.makeText(this@MainActivity, "초대 링크가 클립보드에 복사됐어요", Toast.LENGTH_SHORT).show()
 
-                                            val content = "약속에 초대됐어요!\n하단 링크를 통해 어떤 약속인지 확인하세요."
-                                            putExtra(Intent.EXTRA_TEXT,"$content\n\n$link")
+                                                val content = "약속에 초대됐어요!\n하단 링크를 통해 어떤 약속인지 확인하세요."
+                                                putExtra(Intent.EXTRA_TEXT,"$content\n\n$link")
+                                            }
                                         }
                                     }
-                                }
-                            }
+                                },
+                                "친구에게 초대 링크 공유하기"
+                            )
                         )
                     }
 
