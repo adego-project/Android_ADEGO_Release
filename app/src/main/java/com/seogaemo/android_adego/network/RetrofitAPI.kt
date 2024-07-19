@@ -99,4 +99,8 @@ interface RetrofitAPI {
         @Header("Authorization") authorization: String,
         @Path("inviteId") inviteId: String
     ): Response<PlanResponse>
+
+    @POST("auth/test-account")
+    suspend fun testSignIn(
+    ): Response<SignInResponse>
 }
