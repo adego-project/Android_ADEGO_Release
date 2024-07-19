@@ -1,11 +1,20 @@
 package com.seogaemo.android_adego.view.main
 
+import android.Manifest
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -23,10 +32,12 @@ import com.seogaemo.android_adego.databinding.ActivityMainBinding
 import com.seogaemo.android_adego.databinding.DisabledViewBinding
 import com.seogaemo.android_adego.databinding.NoPromiseViewBinding
 import com.seogaemo.android_adego.util.Util.copyToClipboard
+import com.seogaemo.android_adego.util.Util.createDialog
 import com.seogaemo.android_adego.util.Util.getLink
 import com.seogaemo.android_adego.util.Util.getPlan
 import com.seogaemo.android_adego.util.Util.parseDateTime
 import com.seogaemo.android_adego.view.alarm.AlarmActivity
+import com.seogaemo.android_adego.view.auth.LoginActivity
 import com.seogaemo.android_adego.view.plan.PlanActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,10 +56,21 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     private lateinit var mMap: GoogleMap
     private lateinit var mapFragment: SupportMapFragment
 
+    private val loginReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "ACTION_LOGIN_REQUIRED") {
+                startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                finishAffinity()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(loginReceiver, IntentFilter("ACTION_LOGIN_REQUIRED"))
 
         mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this@MainActivity)
@@ -57,7 +79,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             startActivity(Intent(this@MainActivity, SettingActivity::class.java))
         }
 
-
+        askNotificationPermission()
     }
 
     override fun onResume() {
@@ -207,6 +229,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     override fun onDestroy() {
         super.onDestroy()
         mapFragment.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(loginReceiver)
     }
 
     override fun onLowMemory() {
@@ -220,6 +243,29 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             return true
         } else {
             return false
+        }
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { isGranted: Boolean ->
+        if (!isGranted) {
+            askNotificationPermission()
+        }
+    }
+
+    private fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                    createDialog(this@MainActivity, "알람 권한을\n허가해주세요", "허용") { dialog ->
+                        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        dialog.dismiss()
+                    }
+                } else {
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
         }
     }
 }
