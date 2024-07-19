@@ -10,6 +10,7 @@ import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -32,7 +33,6 @@ import com.seogaemo.android_adego.databinding.ActivityMainBinding
 import com.seogaemo.android_adego.databinding.DisabledViewBinding
 import com.seogaemo.android_adego.databinding.NoPromiseViewBinding
 import com.seogaemo.android_adego.util.Util.copyToClipboard
-import com.seogaemo.android_adego.util.Util.createDialog
 import com.seogaemo.android_adego.util.Util.getLink
 import com.seogaemo.android_adego.util.Util.getPlan
 import com.seogaemo.android_adego.util.Util.parseDateTime
@@ -55,6 +55,23 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
     private lateinit var mMap: GoogleMap
     private lateinit var mapFragment: SupportMapFragment
+
+    private var placeDate: String? = null
+    private var planStatus: PlanStatus? = null
+
+    private val timeUpdateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_TIME_TICK) {
+                placeDate?.let {
+                    findViewById<TextView>(R.id.next_text).text = calculateDifference(it)
+                    if (isDateEnd(it)) {
+                        bindingView()
+                        removeTimeReceiver()
+                    }
+                }
+            }
+        }
+    }
 
     private val loginReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -82,31 +99,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         askNotificationPermission()
     }
 
-    override fun onResume() {
-        super.onResume()
-        CoroutineScope(Dispatchers.IO).launch {
-            val plan = getPlan(this@MainActivity)
-            val planStatus = determinePlanStatus(plan)
-
-            withContext(Dispatchers.Main) {
-                setBottomLayout(planStatus, plan)
-                if (::mMap.isInitialized) {
-                    mMap.clear()
-                    plan?.let {
-                        val place = it.place
-                        mMap.addMarker(
-                            MarkerOptions()
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.default_marker))
-                                .position(LatLng(place.y.toDouble(), place.x.toDouble()))
-                        )
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(place.y.toDouble(), place.x.toDouble()), 16.0F))
-                    }
-                }
-            }
-        }
-        mapFragment.onResume()
-    }
-
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         try {
@@ -124,6 +116,35 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
         mMap.setOnMarkerClickListener(this@MainActivity)
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(37.627717208553854, 126.92327919682702), 16.0F))
+    }
+
+    private fun bindingView() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val plan = getPlan(this@MainActivity)
+            planStatus = determinePlanStatus(plan)
+
+            if (planStatus == PlanStatus.DISABLED) placeDate = plan?.date
+            withContext(Dispatchers.Main) {
+                planStatus?.let { setBottomLayout(it, plan) }
+                if (::mMap.isInitialized) {
+                    mMap.clear()
+                    plan?.let {
+                        val place = it.place
+                        mMap.addMarker(
+                            MarkerOptions()
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.default_marker))
+                                .position(LatLng(place.y.toDouble(), place.x.toDouble()))
+                        )
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(place.y.toDouble(), place.x.toDouble()), 16.0F))
+                    }
+                }
+            }
+        }
+        mapFragment.onResume()
+    }
+
+    private fun removeTimeReceiver() {
+        unregisterReceiver(timeUpdateReceiver)
     }
 
     private fun determinePlanStatus(plan: PlanResponse?): PlanStatus {
@@ -190,6 +211,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                     this.locationText.text = promiseInfo.place.name
 
                     this.nextText.text = calculateDifference(promiseInfo.date)
+
+                    registerReceiver(timeUpdateReceiver, IntentFilter(Intent.ACTION_TIME_TICK))
                 }
             }
             PlanStatus.ACTIVE -> {
@@ -221,9 +244,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
     }
 
+    override fun onResume() {
+        super.onResume()
+        bindingView()
+    }
+
     override fun onPause() {
         super.onPause()
         mapFragment.onPause()
+        if (planStatus == PlanStatus.DISABLED) unregisterReceiver(timeUpdateReceiver)
     }
 
     override fun onDestroy() {
@@ -265,5 +294,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 }
             }
         }
+    }
+
+    private fun isDateEnd(dateString: String): Boolean {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'H:m:ss")
+        val inputDateTime = LocalDateTime.parse(dateString, formatter)
+
+        val koreaZone = ZoneId.of("Asia/Seoul")
+        val currentKoreaDateTime = LocalDateTime.now(koreaZone)
+
+        return inputDateTime.isBefore(currentKoreaDateTime) || inputDateTime.isEqual(currentKoreaDateTime)
     }
 }
