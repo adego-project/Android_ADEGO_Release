@@ -8,14 +8,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import com.google.android.gms.tasks.Tasks
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import com.google.firebase.messaging.FirebaseMessaging
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
 import com.seogaemo.android_adego.BuildConfig
+import com.seogaemo.android_adego.data.FCMRequest
 import com.seogaemo.android_adego.data.SignInRequest
 import com.seogaemo.android_adego.data.SignInResponse
 import com.seogaemo.android_adego.database.TokenManager
@@ -23,6 +26,7 @@ import com.seogaemo.android_adego.databinding.ActivityLoginBinding
 import com.seogaemo.android_adego.network.RetrofitAPI
 import com.seogaemo.android_adego.network.RetrofitClient
 import com.seogaemo.android_adego.util.Util.getUser
+import com.seogaemo.android_adego.util.Util.setFCMToken
 import com.seogaemo.android_adego.view.main.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -163,16 +167,34 @@ class LoginActivity : AppCompatActivity() {
     private fun finishLogin(context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
             val isFirst = getUser(this@LoginActivity)?.name.isNullOrEmpty()
+            val token = fetchFcmToken()
+
+            val isSuccess = token?.let { setFCMToken(FCMRequest(token)) } != null
+
             withContext(Dispatchers.Main) {
-                if (!isFirst) {
-                    startActivity(Intent(context, MainActivity::class.java))
+                if (!isSuccess) {
+                    Toast.makeText(context, "로그인 실패", Toast.LENGTH_SHORT).show()
+                    TokenManager.accessToken = ""
+                    TokenManager.refreshToken = ""
                 } else {
-                    startActivity(Intent(context, ProfileNameActivity::class.java))
+                    val nextActivity = if (isFirst) ProfileNameActivity::class.java else MainActivity::class.java
+                    startActivity(Intent(context, nextActivity))
                 }
                 finishAffinity()
             }
         }
+    }
 
+    private suspend fun fetchFcmToken(): String? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val task = FirebaseMessaging.getInstance().token
+                val token = Tasks.await(task)
+                token
+            } catch (e: Exception) {
+                null
+            }
+        }
     }
 
 }
