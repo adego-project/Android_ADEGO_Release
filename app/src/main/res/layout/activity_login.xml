@@ -9,6 +9,7 @@
     tools:context=".view.auth.LoginActivity">
 
     <LinearLayout
+        android:id="@+id/logo_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"

@@ -45,6 +45,10 @@ class LoginActivity : AppCompatActivity() {
             googleLogin(this@LoginActivity)
         }
 
+        binding.logoButton.setOnClickListener {
+            saveToken(this@LoginActivity, "test", "test")
+        }
+
     }
 
     private fun kakaoLogin(context: Context) {
@@ -122,7 +126,7 @@ class LoginActivity : AppCompatActivity() {
         return try {
             withContext(Dispatchers.IO) {
                 val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
-                val response = if (type == "kakao") retrofitAPI.kakaoSignIn(signInRequest) else retrofitAPI.googleSignIn(signInRequest)
+                val response = if (type == "kakao") retrofitAPI.kakaoSignIn(signInRequest) else if (type == "google") retrofitAPI.googleSignIn(signInRequest) else retrofitAPI.testSignIn()
                 if (response.isSuccessful) {
                     response.body()
                 } else {
