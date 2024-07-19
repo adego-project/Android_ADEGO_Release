@@ -1,6 +1,8 @@
 package com.seogaemo.android_adego.network
 
 import com.seogaemo.android_adego.data.AddressResponse
+import com.seogaemo.android_adego.data.FCMRequest
+import com.seogaemo.android_adego.data.FCMResponse
 import com.seogaemo.android_adego.data.ImageRequest
 import com.seogaemo.android_adego.data.NameRequest
 import com.seogaemo.android_adego.data.InvitePlanUrlResponse
@@ -115,4 +117,10 @@ interface RetrofitAPI {
         @Header("Authorization") authorization: String,
         @Body body: Location
     ): Response<Boolean>
+
+    @PUT("user/fcm")
+    suspend fun setFCMToken(
+        @Header("Authorization") authorization: String,
+        @Body body: FCMRequest
+    ): Response<FCMResponse>
 }
