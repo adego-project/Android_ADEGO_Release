@@ -4,6 +4,7 @@ import com.seogaemo.android_adego.data.AddressResponse
 import com.seogaemo.android_adego.data.ImageRequest
 import com.seogaemo.android_adego.data.NameRequest
 import com.seogaemo.android_adego.data.InvitePlanUrlResponse
+import com.seogaemo.android_adego.data.PlanInviteResponse
 import com.seogaemo.android_adego.data.PlanRequest
 import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.data.SignInRequest
@@ -17,6 +18,7 @@ import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 
@@ -85,4 +87,16 @@ interface RetrofitAPI {
     suspend fun getInvitePlanUrl(
         @Header("Authorization") authorization: String,
     ): Response<InvitePlanUrlResponse>
+
+    @GET("plan/invite/{inviteId}")
+    suspend fun getInvitePlanInfo(
+        @Header("Authorization") authorization: String,
+        @Path("inviteId") inviteId: String
+    ): Response<PlanInviteResponse>
+
+    @PUT("plan/invite/{inviteId}")
+    suspend fun acceptPlan(
+        @Header("Authorization") authorization: String,
+        @Path("inviteId") inviteId: String
+    ): Response<PlanResponse>
 }
