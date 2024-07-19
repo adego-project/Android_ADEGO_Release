@@ -21,6 +21,7 @@ import com.seogaemo.android_adego.BuildConfig
 import com.seogaemo.android_adego.data.FCMRequest
 import com.seogaemo.android_adego.data.SignInRequest
 import com.seogaemo.android_adego.data.SignInResponse
+import com.seogaemo.android_adego.database.SharedPreference
 import com.seogaemo.android_adego.database.TokenManager
 import com.seogaemo.android_adego.databinding.ActivityLoginBinding
 import com.seogaemo.android_adego.network.RetrofitAPI
@@ -177,7 +178,12 @@ class LoginActivity : AppCompatActivity() {
                     TokenManager.accessToken = ""
                     TokenManager.refreshToken = ""
                 } else {
-                    val nextActivity = if (isFirst) ProfileNameActivity::class.java else MainActivity::class.java
+                    val nextActivity = if (isFirst) {
+                        ProfileNameActivity::class.java
+                    } else {
+                        SharedPreference.isFirst = false
+                        MainActivity::class.java
+                    }
                     startActivity(Intent(context, nextActivity))
                 }
                 finishAffinity()
