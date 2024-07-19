@@ -123,4 +123,10 @@ interface RetrofitAPI {
         @Header("Authorization") authorization: String,
         @Body body: FCMRequest
     ): Response<FCMResponse>
+
+    @PUT("plan/alert")
+    suspend fun callUser (
+        @Header("Authorization") authorization: String,
+        @Query("targetUserId") targetUserId: String
+    ): Response<Unit>
 }
