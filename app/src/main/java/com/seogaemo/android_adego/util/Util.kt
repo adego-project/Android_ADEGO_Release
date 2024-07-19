@@ -233,4 +233,31 @@ object Util {
         clipboardManager.setPrimaryClip(clipData)
     }
 
+    suspend fun setFCMToken(fcmRequest: FCMRequest): FCMResponse? {
+        return try {
+            withContext(Dispatchers.IO) {
+                val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
+                val response = retrofitAPI.setFCMToken("bearer ${TokenManager.accessToken}", fcmRequest)
+                if (response.isSuccessful) {
+                    response.body()
+                } else if (response.code() == 401) {
+                    val getRefresh = getRefresh()
+                    if (getRefresh != null) {
+                        TokenManager.refreshToken = getRefresh.refreshToken
+                        TokenManager.accessToken = getRefresh.accessToken
+                        setFCMToken(fcmRequest)
+                    } else {
+                        TokenManager.refreshToken = ""
+                        TokenManager.accessToken = ""
+                        null
+                    }
+                }else {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
 }
