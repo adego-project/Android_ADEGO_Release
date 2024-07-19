@@ -4,6 +4,8 @@ import com.seogaemo.android_adego.data.AddressResponse
 import com.seogaemo.android_adego.data.ImageRequest
 import com.seogaemo.android_adego.data.NameRequest
 import com.seogaemo.android_adego.data.InvitePlanUrlResponse
+import com.seogaemo.android_adego.data.Location
+import com.seogaemo.android_adego.data.LocationResponse
 import com.seogaemo.android_adego.data.PlanInviteResponse
 import com.seogaemo.android_adego.data.PlanRequest
 import com.seogaemo.android_adego.data.PlanResponse
@@ -77,7 +79,6 @@ interface RetrofitAPI {
         @Body body: PlanRequest
     ): Response<PlanResponse>
 
-
     @GET("plan")
     suspend fun getPlan(
         @Header("Authorization") authorization: String,
@@ -103,4 +104,15 @@ interface RetrofitAPI {
     @POST("auth/test-account")
     suspend fun testSignIn(
     ): Response<SignInResponse>
+
+    @GET("location/participants")
+    suspend fun getLocation(
+        @Header("Authorization") authorization: String,
+    ): Response<LocationResponse>
+
+    @POST("location/update")
+    suspend fun updateLocation(
+        @Header("Authorization") authorization: String,
+        @Body body: Location
+    ): Response<Boolean>
 }
