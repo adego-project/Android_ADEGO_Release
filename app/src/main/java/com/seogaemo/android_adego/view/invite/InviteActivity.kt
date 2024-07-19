@@ -105,8 +105,7 @@ class InviteActivity : AppCompatActivity() {
                     if (getRefresh != null) {
                         TokenManager.refreshToken = getRefresh.refreshToken
                         TokenManager.accessToken = getRefresh.accessToken
-                        getUser(this@InviteActivity)
-                        null
+                        acceptPlan(inviteId)
                     } else {
                         TokenManager.refreshToken = ""
                         TokenManager.accessToken = ""
@@ -135,8 +134,7 @@ class InviteActivity : AppCompatActivity() {
                     if (getRefresh != null) {
                         TokenManager.refreshToken = getRefresh.refreshToken
                         TokenManager.accessToken = getRefresh.accessToken
-                        getUser(this@InviteActivity)
-                        null
+                        getPlanInfo(inviteId)
                     } else {
                         TokenManager.refreshToken = ""
                         TokenManager.accessToken = ""

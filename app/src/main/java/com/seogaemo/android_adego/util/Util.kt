@@ -22,6 +22,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.seogaemo.android_adego.R
+import com.seogaemo.android_adego.data.FCMRequest
+import com.seogaemo.android_adego.data.FCMResponse
 import com.seogaemo.android_adego.data.InvitePlanUrlResponse
 import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.data.SignInResponse
@@ -208,8 +210,7 @@ object Util {
                     if (getRefresh != null) {
                         TokenManager.refreshToken = getRefresh.refreshToken
                         TokenManager.accessToken = getRefresh.accessToken
-                        getUser(activity)
-                        null
+                        getLink(activity)
                     } else {
                         TokenManager.refreshToken = ""
                         TokenManager.accessToken = ""
