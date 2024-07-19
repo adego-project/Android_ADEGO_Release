@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.seogaemo.android_adego.data.PlanInviteResponse
@@ -73,14 +74,24 @@ class InviteActivity : AppCompatActivity() {
                     }
 
                     binding.refuseButton.setOnClickListener {
-                        finish()
+                        startActivity(Intent(this@InviteActivity, MainActivity::class.java).apply {
+                            finishAffinity()
+                        })
                     }
                 }
             }
 
         }
+
+        onBackPressedDispatcher.addCallback(this, onBackMainPressedCallback)
     }
 
+    private val onBackMainPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            startActivity(Intent(this@InviteActivity, MainActivity::class.java))
+            finishAffinity()
+        }
+    }
 
     private suspend fun acceptPlan(inviteId: String): PlanResponse? {
         return try {
