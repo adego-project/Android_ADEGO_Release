@@ -258,10 +258,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
-                    createDialog(this@MainActivity, "알람 권한을\n허가해주세요", "허용") { dialog ->
-                        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        dialog.dismiss()
-                    }
+                    Toast.makeText(this@MainActivity, "알람 권한을 허용해주세요", Toast.LENGTH_SHORT).show()
+                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
