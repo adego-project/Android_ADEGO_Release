@@ -22,6 +22,7 @@ import com.seogaemo.android_adego.databinding.ActiveViewBinding
 import com.seogaemo.android_adego.databinding.ActivityMainBinding
 import com.seogaemo.android_adego.databinding.DisabledViewBinding
 import com.seogaemo.android_adego.databinding.NoPromiseViewBinding
+import com.seogaemo.android_adego.util.Util.copyToClipboard
 import com.seogaemo.android_adego.util.Util.getLink
 import com.seogaemo.android_adego.util.Util.getPlan
 import com.seogaemo.android_adego.util.Util.parseDateTime
@@ -143,6 +144,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                                     val link = getLink(this@MainActivity)
                                     if (link != null) {
                                         withContext(Dispatchers.Main) {
+                                            this@MainActivity.copyToClipboard(link.link)
+                                            Toast.makeText(this@MainActivity, "초대 링크가 클립보드에 복사됐어요", Toast.LENGTH_SHORT).show()
+
                                             val content = "약속에 초대됐어요!\n하단 링크를 통해 어떤 약속인지 확인하세요."
                                             putExtra(Intent.EXTRA_TEXT,"$content\n\n$link")
                                         }

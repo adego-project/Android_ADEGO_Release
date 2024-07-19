@@ -7,9 +7,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.Toast
 import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.databinding.FragmentPlanFinishBinding
 import com.seogaemo.android_adego.util.Util.convertDateFormat
+import com.seogaemo.android_adego.util.Util.copyToClipboard
 import com.seogaemo.android_adego.util.Util.getLink
 import com.seogaemo.android_adego.view.main.MainActivity
 import kotlinx.coroutines.CoroutineScope
@@ -66,6 +68,9 @@ class PlanFinishFragment : Fragment() {
                                     val link = getLink(requireActivity())
                                     if (link != null) {
                                         withContext(Dispatchers.Main) {
+                                            requireActivity().copyToClipboard(link.link)
+                                            Toast.makeText(requireContext(), "초대 링크가 클립보드에 복사됐어요", Toast.LENGTH_SHORT).show()
+
                                             val content = "약속에 초대됐어요!\n하단 링크를 통해 어떤 약속인지 확인하세요."
                                             putExtra(Intent.EXTRA_TEXT,"$content\n\n$link")
                                         }
