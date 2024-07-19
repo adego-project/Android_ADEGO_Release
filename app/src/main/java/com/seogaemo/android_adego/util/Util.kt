@@ -2,6 +2,8 @@ package com.seogaemo.android_adego.util
 
 import android.app.Activity
 import android.app.Dialog
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.Intent
@@ -17,6 +19,7 @@ import android.view.Window
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.data.InvitePlanUrlResponse
@@ -221,6 +224,12 @@ object Util {
         } catch (e: Exception) {
             null
         }
+    }
+
+    fun Context.copyToClipboard(text: String) {
+        val clipboardManager = getSystemService(AppCompatActivity.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipData = ClipData.newPlainText("url", text)
+        clipboardManager.setPrimaryClip(clipData)
     }
 
 }
