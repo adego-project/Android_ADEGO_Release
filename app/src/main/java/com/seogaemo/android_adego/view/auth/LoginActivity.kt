@@ -18,6 +18,7 @@ import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
 import com.seogaemo.android_adego.BuildConfig
+import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.data.FCMRequest
 import com.seogaemo.android_adego.data.SignInRequest
 import com.seogaemo.android_adego.data.SignInResponse
@@ -185,8 +186,9 @@ class LoginActivity : AppCompatActivity() {
                         MainActivity::class.java
                     }
                     startActivity(Intent(context, nextActivity))
+                    overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
+                    finishAffinity()
                 }
-                finishAffinity()
             }
         }
     }

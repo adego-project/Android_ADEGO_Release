@@ -26,6 +26,7 @@ class SplashActivity : AppCompatActivity() {
             } else {
                 startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
             }
+            overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
             finishAffinity()
         }, 1500)
 

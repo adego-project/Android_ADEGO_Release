@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.data.ImageRequest
 import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.data.UserResponse
@@ -65,6 +66,7 @@ class SettingActivity : AppCompatActivity() {
 
         binding.backButton.setOnClickListener {
             finish()
+            overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
         }
 
         binding.leavePlanButton.apply {
@@ -90,6 +92,7 @@ class SettingActivity : AppCompatActivity() {
 
                     startActivity(Intent(this@SettingActivity, LoginActivity::class.java))
                     finishAffinity()
+                    overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                 }
             }
         }
@@ -109,6 +112,7 @@ class SettingActivity : AppCompatActivity() {
 
                                 startActivity(Intent(this@SettingActivity, LoginActivity::class.java))
                                 finishAffinity()
+                                overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                             } else {
                                 customDialog.dismiss()
                             }
@@ -127,6 +131,7 @@ class SettingActivity : AppCompatActivity() {
                         finish()
                     }
                 )
+                overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
             }
         }
 
@@ -137,6 +142,10 @@ class SettingActivity : AppCompatActivity() {
 
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
+    }
 
     private suspend fun updateImage(context: Context, image: String): Unit? {
         return try {
@@ -156,6 +165,7 @@ class SettingActivity : AppCompatActivity() {
                         TokenManager.accessToken = ""
                         startActivity(Intent(context, LoginActivity::class.java))
                         finishAffinity()
+                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                         null
                     }
                 } else {
@@ -191,6 +201,7 @@ class SettingActivity : AppCompatActivity() {
                         TokenManager.accessToken = ""
                         startActivity(Intent(context, LoginActivity::class.java))
                         finishAffinity()
+                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                         null
                     }
                 } else {
@@ -226,6 +237,7 @@ class SettingActivity : AppCompatActivity() {
                         TokenManager.accessToken = ""
                         startActivity(Intent(context, LoginActivity::class.java))
                         finishAffinity()
+                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                         null
                     }
                 } else if (response.code() == 404) {

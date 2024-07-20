@@ -11,6 +11,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.data.ImageRequest
 import com.seogaemo.android_adego.data.NameRequest
 import com.seogaemo.android_adego.data.UserResponse
@@ -67,6 +68,7 @@ class ProfileImageActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.backButton.setOnClickListener {
+            overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
             finish()
         }
 
@@ -84,6 +86,7 @@ class ProfileImageActivity : AppCompatActivity() {
 
                         startActivity(Intent(this@ProfileImageActivity, MainActivity::class.java))
                         finishAffinity()
+                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                     } else {
                         Toast.makeText(this@ProfileImageActivity, "업데이트 실패하였습니다", Toast.LENGTH_SHORT).show()
                     }
@@ -110,6 +113,7 @@ class ProfileImageActivity : AppCompatActivity() {
                         TokenManager.accessToken = ""
                         startActivity(Intent(context, LoginActivity::class.java))
                         finishAffinity()
+                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                         null
                     }
                 } else {
@@ -147,6 +151,7 @@ class ProfileImageActivity : AppCompatActivity() {
                         TokenManager.accessToken = ""
                         startActivity(Intent(context, LoginActivity::class.java))
                         finishAffinity()
+                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                         null
                     }
                 } else {
@@ -166,5 +171,9 @@ class ProfileImageActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
+    }
 
 }

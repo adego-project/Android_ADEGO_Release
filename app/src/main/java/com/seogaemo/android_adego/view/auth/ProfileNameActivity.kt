@@ -11,6 +11,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.data.NameRequest
 import com.seogaemo.android_adego.data.UserResponse
 import com.seogaemo.android_adego.database.TokenManager
@@ -39,6 +40,7 @@ class ProfileNameActivity : AppCompatActivity() {
             binding.backButton.setOnClickListener {
                 startActivity(Intent(this@ProfileNameActivity, SettingActivity::class.java))
                 finish()
+                overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
             }
 
             binding.nextButton.setOnClickListener {
@@ -49,6 +51,7 @@ class ProfileNameActivity : AppCompatActivity() {
                     if (isSuccess) {
                         startActivity(Intent(this@ProfileNameActivity, SettingActivity::class.java))
                         finish()
+                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                     }
                 }
             }
@@ -57,6 +60,7 @@ class ProfileNameActivity : AppCompatActivity() {
             binding.backButton.setOnClickListener {
                 startActivity(Intent(this@ProfileNameActivity, LoginActivity::class.java))
                 finishAffinity()
+                overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
             }
 
             binding.nextButton.setOnClickListener {
@@ -64,6 +68,7 @@ class ProfileNameActivity : AppCompatActivity() {
                     Intent(this@ProfileNameActivity, ProfileImageActivity::class.java).apply
                     { this.putExtra("name", binding.nameInput.text.toString()) }
                 )
+                overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
             }
 
             onBackPressedDispatcher.addCallback(this, onBackProfilePressedCallback)
@@ -106,6 +111,7 @@ class ProfileNameActivity : AppCompatActivity() {
         override fun handleOnBackPressed() {
             startActivity(Intent(this@ProfileNameActivity, LoginActivity::class.java))
             finishAffinity()
+            overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
         }
     }
 
@@ -113,6 +119,7 @@ class ProfileNameActivity : AppCompatActivity() {
         override fun handleOnBackPressed() {
             startActivity(Intent(this@ProfileNameActivity, SettingActivity::class.java))
             finish()
+            overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
         }
     }
 
@@ -134,6 +141,7 @@ class ProfileNameActivity : AppCompatActivity() {
                         TokenManager.accessToken = ""
                         startActivity(Intent(context, LoginActivity::class.java))
                         finishAffinity()
+                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                         null
                     }
                 } else {

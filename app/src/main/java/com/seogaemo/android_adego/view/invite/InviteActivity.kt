@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.data.PlanInviteResponse
 import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.database.TokenManager
@@ -140,6 +141,7 @@ class InviteActivity : AppCompatActivity() {
                         TokenManager.accessToken = ""
                         startActivity(Intent(this@InviteActivity, LoginActivity::class.java))
                         finishAffinity()
+                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                         null
                     }
                 }else {
@@ -149,6 +151,11 @@ class InviteActivity : AppCompatActivity() {
         } catch (e: Exception) {
             null
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
     }
 
 }

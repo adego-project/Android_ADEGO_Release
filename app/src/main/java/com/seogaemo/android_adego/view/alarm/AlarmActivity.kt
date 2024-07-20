@@ -3,6 +3,7 @@ package com.seogaemo.android_adego.view.alarm
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
+import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.databinding.ActivityAlarmBinding
 import com.seogaemo.android_adego.util.Util.getPlan
 import com.seogaemo.android_adego.util.Util.getUser
@@ -20,6 +21,7 @@ class AlarmActivity : AppCompatActivity() {
 
         binding.backButton.setOnClickListener {
             finish()
+            overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
         }
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -39,5 +41,11 @@ class AlarmActivity : AppCompatActivity() {
         }
 
     }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
+    }
+
 
 }

@@ -94,6 +94,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
         binding.settingButton.setOnClickListener {
             startActivity(Intent(this@MainActivity, SettingActivity::class.java))
+            overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
         }
 
         askNotificationPermission()
@@ -227,6 +228,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
                     this.nextButton.setOnClickListener {
                         startActivity(Intent(this@MainActivity, AlarmActivity::class.java))
+                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                     }
                 }
             }
@@ -234,6 +236,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 NoPromiseViewBinding.inflate(inflater, binding.includeContainer, false).apply {
                     this.nextButton.setOnClickListener {
                         startActivity(Intent(this@MainActivity, PlanActivity::class.java))
+                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                     }
                 }
             }

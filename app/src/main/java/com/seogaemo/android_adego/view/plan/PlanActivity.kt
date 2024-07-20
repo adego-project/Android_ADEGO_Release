@@ -33,7 +33,12 @@ class PlanActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.backButton.setOnClickListener {
-            this.supportFragmentManager.popBackStack()
+            if (supportFragmentManager.fragments.size == 1) {
+                finish()
+                overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
+            } else {
+                this.supportFragmentManager.popBackStack()
+            }
         }
 
         if (savedInstanceState == null) {
@@ -46,6 +51,7 @@ class PlanActivity : AppCompatActivity() {
 
     fun addFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
+            .setCustomAnimations(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
             .add(R.id.fragment_container, fragment)
             .addToBackStack(null)
             .commit()
@@ -71,6 +77,7 @@ class PlanActivity : AppCompatActivity() {
                             TokenManager.accessToken = ""
                             startActivity(Intent(context, LoginActivity::class.java))
                             finishAffinity()
+                            overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
                             null
                         }
                     } else {
@@ -97,6 +104,11 @@ class PlanActivity : AppCompatActivity() {
                 this::planDate.isInitialized &&
                 this::planTime.isInitialized &&
                 this::planPlace.isInitialized
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
     }
 
 
