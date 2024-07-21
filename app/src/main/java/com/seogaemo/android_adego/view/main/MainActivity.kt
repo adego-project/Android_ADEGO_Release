@@ -329,6 +329,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             override fun run() {
                 val handler = this
                 CoroutineScope(Dispatchers.IO).launch {
+                    getLocation()?.data.let {
+                        withContext(Dispatchers.Main) { setMarker(plan, it!!) }
+                    }
                     afterActiveTime+=1500
                     if (afterActiveTime < 150) {
                         locationHandler.postDelayed(handler, 15000)
@@ -345,6 +348,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         locationHandler.removeCallbacksAndMessages(null)
     }
 
+    private fun setMarker(plan: PlanResponse, data: Map<String, Location>) {
+        plan.users.forEach { user ->
+            Glide.with(this)
+                .load(user.profileImage)
+                .into(binding.marker)
+            val location = data[user.id]
+            mMap.addMarker(
+                MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromBitmap(this.viewToBitmap(binding.marker)))
+                    .position(LatLng(location?.lat!!.toDouble(), location.lng.toDouble()))
+            )
+        }
+    }
 
     private suspend fun getLocation(): LocationResponse? {
         return try {
