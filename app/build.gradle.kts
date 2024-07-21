@@ -108,4 +108,6 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.messaging.ktx)
     implementation(libs.play.services.tasks)
+
+    implementation(libs.play.services.location)
 }

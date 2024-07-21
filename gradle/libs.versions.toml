@@ -15,6 +15,7 @@ constraintlayout = "2.1.4"
 converterGson = "2.9.0"
 converterScalars = "2.5.0"
 materialCalendarview = "2.0.1"
+playServicesLocation = "21.3.0"
 playServicesMaps = "19.0.0"
 playServicesTasks = "18.2.0"
 retrofit = "2.9.0"
@@ -40,6 +41,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 material-calendarview = { module = "com.github.prolificinteractive:material-calendarview", version.ref = "materialCalendarview" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 play-services-tasks = { module = "com.google.android.gms:play-services-tasks", version.ref = "playServicesTasks" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
