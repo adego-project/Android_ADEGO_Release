@@ -9,6 +9,8 @@ import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.widget.TextView
 import android.widget.Toast
@@ -16,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.bumptech.glide.Glide
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -26,16 +29,23 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.seogaemo.android_adego.R
+import com.seogaemo.android_adego.data.Location
+import com.seogaemo.android_adego.data.LocationResponse
 import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.data.PlanStatus
+import com.seogaemo.android_adego.database.TokenManager
 import com.seogaemo.android_adego.databinding.ActiveViewBinding
 import com.seogaemo.android_adego.databinding.ActivityMainBinding
 import com.seogaemo.android_adego.databinding.DisabledViewBinding
 import com.seogaemo.android_adego.databinding.NoPromiseViewBinding
+import com.seogaemo.android_adego.network.RetrofitAPI
+import com.seogaemo.android_adego.network.RetrofitClient
 import com.seogaemo.android_adego.util.Util.copyToClipboard
 import com.seogaemo.android_adego.util.Util.getLink
 import com.seogaemo.android_adego.util.Util.getPlan
+import com.seogaemo.android_adego.util.Util.getRefresh
 import com.seogaemo.android_adego.util.Util.parseDateTime
+import com.seogaemo.android_adego.util.Util.viewToBitmap
 import com.seogaemo.android_adego.view.alarm.AlarmActivity
 import com.seogaemo.android_adego.view.auth.LoginActivity
 import com.seogaemo.android_adego.view.plan.PlanActivity
@@ -81,6 +91,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             }
         }
     }
+
+    private val locationHandler = Handler(Looper.getMainLooper())
+
+    private var afterActiveTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -130,13 +144,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                 if (::mMap.isInitialized) {
                     mMap.clear()
                     plan?.let {
-                        val place = it.place
-                        mMap.addMarker(
-                            MarkerOptions()
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.default_marker))
-                                .position(LatLng(place.y.toDouble(), place.x.toDouble()))
-                        )
+                        val place = plan.place
+                        mMap.addMarker(MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.default_marker)).position(LatLng(place.y.toDouble(), place.x.toDouble())))
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(place.y.toDouble(), place.x.toDouble()), 16.0F))
+
+                        if (planStatus == PlanStatus.ACTIVE) {
+                            locationStart(plan)
+                        }
                     }
                 }
             }
@@ -262,6 +276,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         super.onDestroy()
         mapFragment.onDestroy()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(loginReceiver)
+        if (planStatus == PlanStatus.ACTIVE) locationStop()
     }
 
     override fun onLowMemory() {
@@ -308,4 +323,64 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
 
         return inputDateTime.isBefore(currentKoreaDateTime) || inputDateTime.isEqual(currentKoreaDateTime)
     }
+
+    private fun locationStart(plan: PlanResponse) {
+        locationHandler.postDelayed(object : Runnable {
+            override fun run() {
+                val handler = this
+                CoroutineScope(Dispatchers.IO).launch {
+                    afterActiveTime+=1500
+                    if (afterActiveTime < 150) {
+                        locationHandler.postDelayed(handler, 15000)
+                    } else {
+                        locationStop()
+                    }
+                }
+            }
+        }, 15000)
+    }
+
+    private fun locationStop() {
+        afterActiveTime = 0L
+        locationHandler.removeCallbacksAndMessages(null)
+    }
+
+
+    private suspend fun getLocation(): LocationResponse? {
+        return try {
+            withContext(Dispatchers.IO) {
+                val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
+                val response = retrofitAPI.getLocation("bearer ${TokenManager.accessToken}")
+                if (response.isSuccessful) {
+                    response.body()
+                } else if (response.code() == 401) {
+                    val getRefresh = getRefresh()
+                    if (getRefresh != null) {
+                        TokenManager.refreshToken = getRefresh.refreshToken
+                        TokenManager.accessToken = getRefresh.accessToken
+                        getLocation()
+                    } else if (response.code() == 404) {
+                        null
+                    } else {
+                        TokenManager.refreshToken = ""
+                        TokenManager.accessToken = ""
+                        startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                        finishAffinity()
+                        null
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@MainActivity, "네트워크 에러", Toast.LENGTH_SHORT).show()
+                    }
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@MainActivity, "네트워크 에러", Toast.LENGTH_SHORT).show()
+            }
+            null
+        }
+    }
+
 }
