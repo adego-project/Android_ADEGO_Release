@@ -60,7 +60,6 @@ class LoginActivity : AppCompatActivity() {
     private fun kakaoLogin(context: Context) {
         val callback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
             if (error != null) {
-                Toast.makeText(context, "카카오 로그인에 실패하였습니다", Toast.LENGTH_SHORT).show()
             } else if (token != null) {
                 saveToken(context, "kakao", token.accessToken)
             }
@@ -122,7 +121,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "구글 로그인에 실패하였습니다", Toast.LENGTH_SHORT).show()
+
             }
         }
 
