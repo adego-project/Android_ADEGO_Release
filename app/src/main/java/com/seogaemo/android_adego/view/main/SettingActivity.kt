@@ -91,8 +91,8 @@ class SettingActivity : AppCompatActivity() {
                     dialog.dismiss()
 
                     startActivity(Intent(this@SettingActivity, LoginActivity::class.java))
-                    finishAffinity()
                     overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
+                    finishAffinity()
                 }
             }
         }
@@ -111,8 +111,8 @@ class SettingActivity : AppCompatActivity() {
                                 customDialog.dismiss()
 
                                 startActivity(Intent(this@SettingActivity, LoginActivity::class.java))
-                                finishAffinity()
                                 overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
+                                finishAffinity()
                             } else {
                                 customDialog.dismiss()
                             }
