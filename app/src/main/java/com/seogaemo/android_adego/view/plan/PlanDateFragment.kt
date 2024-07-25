@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.databinding.FragmentPlanDateBinding
 import com.seogaemo.android_adego.view.plan.calendar.FutureDateDecorator
 import com.seogaemo.android_adego.view.plan.calendar.PastDateDecorator
@@ -46,6 +47,7 @@ class PlanDateFragment : Fragment() {
                 activity.planDate = "${date.date}"
                 activity.addFragment(PlanTimeFragment())
             }
+            this.setHeaderTextAppearance(R.style.CalendarWidgetHeader)
         }
 
     }
