@@ -6,6 +6,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/gray10"
     android:scrollbars="none"
+    android:clickable="true"
+    android:focusableInTouchMode="true"
     tools:context=".view.plan.PlanPlaceFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
