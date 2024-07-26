@@ -68,8 +68,8 @@ class ProfileImageActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.backButton.setOnClickListener {
-            overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
             finish()
+            overridePendingTransition(R.anim.anim_slide_in_from_left_fade_in, R.anim.anim_fade_out)
         }
 
         binding.setImageButton.apply {
@@ -85,8 +85,8 @@ class ProfileImageActivity : AppCompatActivity() {
                         SharedPreference.isFirst = false
 
                         startActivity(Intent(this@ProfileImageActivity, MainActivity::class.java))
-                        finishAffinity()
                         overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
+                        finishAffinity()
                     } else {
                         Toast.makeText(this@ProfileImageActivity, "업데이트 실패하였습니다", Toast.LENGTH_SHORT).show()
                     }
