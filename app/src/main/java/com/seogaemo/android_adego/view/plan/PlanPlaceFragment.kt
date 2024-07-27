@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.seogaemo.android_adego.data.AddressResponse
 import com.seogaemo.android_adego.database.TokenManager
@@ -19,8 +20,10 @@ import com.seogaemo.android_adego.network.RetrofitClient
 import com.seogaemo.android_adego.util.Util
 import com.seogaemo.android_adego.view.auth.LoginActivity
 import com.seogaemo.android_adego.view.plan.place.PlaceAdapter
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -28,6 +31,7 @@ class PlanPlaceFragment : Fragment() {
 
     private var _binding: FragmentPlanPlaceBinding? = null
     private val binding get() = _binding!!
+    private val queryFlow = MutableStateFlow("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,10 +48,12 @@ class PlanPlaceFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.locationList.layoutManager = LinearLayoutManager(context)
+
         binding.nameInput.apply {
             this.setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    uiUpdate()
+                    queryFlow.value = text.toString()
                     true
                 } else {
                     false
@@ -59,7 +65,7 @@ class PlanPlaceFragment : Fragment() {
                 }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    uiUpdate()
+                    queryFlow.value = s.toString()
                 }
 
                 override fun afterTextChanged(s: Editable?) {
@@ -69,18 +75,18 @@ class PlanPlaceFragment : Fragment() {
 
 
 
-
-    }
-
-    private fun uiUpdate() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val addressResponse = searchAddress(requireContext(), "${binding.nameInput.text}")
-            withContext(Dispatchers.Main) {
-                if (addressResponse != null) {
-                    updateRecyclerView(requireContext(), addressResponse)
+        lifecycleScope.launch {
+            queryFlow
+                .debounce(300)
+                .collectLatest { query ->
+                    if (query.isNotEmpty()) {
+                        val addressResponse = searchAddress(requireContext(), query)
+                        if (addressResponse != null) updateRecyclerView(addressResponse)
+                    }
                 }
-            }
         }
+
+
     }
 
     private suspend fun searchAddress(context: Context, name: String): AddressResponse? {
@@ -112,8 +118,7 @@ class PlanPlaceFragment : Fragment() {
         }
     }
 
-    private fun updateRecyclerView(context: Context, addressResponse: AddressResponse) {
-        binding.locationList.layoutManager = LinearLayoutManager(context)
+    private fun updateRecyclerView(addressResponse: AddressResponse) {
         binding.locationList.adapter = PlaceAdapter(addressResponse.documents)
     }
 
