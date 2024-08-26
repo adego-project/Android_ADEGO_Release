@@ -269,7 +269,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
     override fun onPause() {
         super.onPause()
         mapFragment.onPause()
-        if (planStatus == PlanStatus.DISABLED) unregisterReceiver(timeUpdateReceiver)
     }
 
     override fun onDestroy() {
@@ -277,6 +276,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         mapFragment.onDestroy()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(loginReceiver)
         if (planStatus == PlanStatus.ACTIVE) locationStop()
+        if (planStatus == PlanStatus.DISABLED) unregisterReceiver(timeUpdateReceiver)
     }
 
     override fun onLowMemory() {
