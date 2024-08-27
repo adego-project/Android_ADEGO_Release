@@ -3,10 +3,12 @@ package com.seogaemo.android_adego.view.alarm
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.bumptech.glide.Glide
@@ -24,17 +26,27 @@ import kotlinx.coroutines.withContext
 
 class AlarmAdapter(private val userList: List<UserResponse>): RecyclerView.Adapter<AlarmAdapter.AlarmViewHolder>() {
 
+    private var lastClickTime = 0L
+    private val clickInterval = 3000L
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlarmViewHolder {
         val binding = AlarmItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         val vibrator = binding.root.context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
         return AlarmViewHolder(binding).also { handler->
             binding.root.setOnClickListener {
-                val effect = VibrationEffect.createOneShot(100L, 100)
-                vibrator.vibrate(effect)
+                val currentTime = SystemClock.elapsedRealtime()
 
-                CoroutineScope(Dispatchers.IO).launch {
-                    callUser(binding.root.context, userList[handler.adapterPosition].id)
+                if (currentTime - lastClickTime >= clickInterval) {
+                    val effect = VibrationEffect.createOneShot(100L, 100)
+                    vibrator.vibrate(effect)
+                    lastClickTime = currentTime
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        callUser(binding.root.context, userList[handler.adapterPosition].id)
+                    }
+                } else {
+                    Toast.makeText(binding.root.context, "3초에 한번만 보낼 수 있습니다", Toast.LENGTH_SHORT).show()
                 }
             }
         }
