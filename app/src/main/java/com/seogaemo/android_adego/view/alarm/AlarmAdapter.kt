@@ -30,7 +30,7 @@ class AlarmAdapter(private val userList: List<UserResponse>): RecyclerView.Adapt
 
         return AlarmViewHolder(binding).also { handler->
             binding.root.setOnClickListener {
-                val effect = VibrationEffect.createOneShot(100L, VibrationEffect.EFFECT_CLICK)
+                val effect = VibrationEffect.createOneShot(100L, 100)
                 vibrator.vibrate(effect)
 
                 CoroutineScope(Dispatchers.IO).launch {
