@@ -1,11 +1,20 @@
 package com.seogaemo.android_adego.service
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.media.RingtoneManager
+import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.firebase.messaging.FirebaseMessagingService
+import com.google.firebase.messaging.RemoteMessage
+import com.seogaemo.android_adego.R
 import com.seogaemo.android_adego.data.FCMRequest
 import com.seogaemo.android_adego.database.TokenManager
 import com.seogaemo.android_adego.util.Util.setFCMToken
+import com.seogaemo.android_adego.view.main.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,4 +31,53 @@ class FCMService : FirebaseMessagingService() {
             }
         }
     }
+
+    override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        super.onMessageReceived(remoteMessage)
+
+        remoteMessage.notification?.let {
+//            sendNotification(it.title.toString(), it.body.toString())
+            sendNotification("친구분이 알림을 울렸어요!", "빨리 약속에 참석해주세요!")
+        }
+
+        remoteMessage.data.isNotEmpty().let {
+//            val title = remoteMessage.data["title"].toString()
+//            val body = remoteMessage.data["body"].toString()
+            sendNotification("친구분이 알림을 울렸어요!", "빨리 약속에 참석해주세요!")
+        }
+    }
+
+    private fun sendNotification(title: String, body: String) {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val channelId = "adego_default_channel"
+        val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.image_logo)
+            .setColor(resources.getColor(R.color.black))
+            .setBadgeIconType(R.drawable.image_logo)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setAutoCancel(true)
+            .setSound(defaultSoundUri)
+            .setContentIntent(pendingIntent)
+
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val channel = NotificationChannel(
+            channelId,
+            "ADEGO",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        notificationManager.createNotificationChannel(channel)
+        notificationManager.notify(0, notificationBuilder.build())
+    }
+
+
 }
