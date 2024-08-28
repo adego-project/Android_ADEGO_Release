@@ -41,17 +41,28 @@ class PlanTimeFragment : Fragment() {
             activity.addFragment(PlanPlaceFragment())
         }
 
-        binding.timeView.setOnTimeChangedListener { timeView, hourOfDay, minute ->
-            if (isToday(activity.planDate)) {
-                val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-                val currentMinute = Calendar.getInstance().get(Calendar.MINUTE)
+        binding.timeView.apply {
+            val calendar = Calendar.getInstance()
+            calendar.add(Calendar.MINUTE, 30)
 
-                if (hourOfDay < currentHour || (hourOfDay == currentHour && minute < currentMinute)) {
-                    timeView.hour = currentHour
-                    timeView.minute = currentMinute
+            val minHour = calendar.get(Calendar.HOUR_OF_DAY)
+            val minMinute = calendar.get(Calendar.MINUTE)
+
+            if (isToday(activity.planDate)) {
+                hour = minHour
+                minute = minMinute
+            }
+
+            setOnTimeChangedListener { timeView, hourOfDay, minute ->
+                if (isToday(activity.planDate)) {
+                    if (hourOfDay < minHour || (hourOfDay == minHour && minute < minMinute)) {
+                        timeView.hour = minHour
+                        timeView.minute = minMinute
+                    }
                 }
             }
         }
+
     }
 
     override fun onDestroyView() {
