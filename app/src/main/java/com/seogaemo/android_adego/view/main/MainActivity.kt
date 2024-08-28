@@ -9,16 +9,17 @@ import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.bumptech.glide.Glide
+import androidx.viewbinding.ViewBinding
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -29,23 +30,19 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.seogaemo.android_adego.R
-import com.seogaemo.android_adego.data.Location
-import com.seogaemo.android_adego.data.LocationResponse
 import com.seogaemo.android_adego.data.PlanResponse
 import com.seogaemo.android_adego.data.PlanStatus
-import com.seogaemo.android_adego.database.TokenManager
+import com.seogaemo.android_adego.database.PlanViewModel
 import com.seogaemo.android_adego.databinding.ActiveViewBinding
 import com.seogaemo.android_adego.databinding.ActivityMainBinding
 import com.seogaemo.android_adego.databinding.DisabledViewBinding
 import com.seogaemo.android_adego.databinding.NoPromiseViewBinding
-import com.seogaemo.android_adego.network.RetrofitAPI
-import com.seogaemo.android_adego.network.RetrofitClient
 import com.seogaemo.android_adego.util.Util.copyToClipboard
 import com.seogaemo.android_adego.util.Util.getLink
-import com.seogaemo.android_adego.util.Util.getPlan
-import com.seogaemo.android_adego.util.Util.getRefresh
+import com.seogaemo.android_adego.util.Util.isActiveDate
+import com.seogaemo.android_adego.util.Util.isDateEnd
+import com.seogaemo.android_adego.util.Util.leavePlan
 import com.seogaemo.android_adego.util.Util.parseDateTime
-import com.seogaemo.android_adego.util.Util.viewToBitmap
 import com.seogaemo.android_adego.view.alarm.AlarmActivity
 import com.seogaemo.android_adego.view.auth.LoginActivity
 import com.seogaemo.android_adego.view.plan.PlanActivity
@@ -59,29 +56,14 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
     private lateinit var binding: ActivityMainBinding
 
     private lateinit var mMap: GoogleMap
     private lateinit var mapFragment: SupportMapFragment
 
-    private var placeDate: String? = null
-    private var planStatus: PlanStatus? = null
-
-    private val timeUpdateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == Intent.ACTION_TIME_TICK) {
-                placeDate?.let {
-                    findViewById<TextView>(R.id.next_text).text = calculateDifference(it)
-                    if (isDateEnd(it)) {
-                        bindingView()
-                        removeTimeReceiver()
-                    }
-                }
-            }
-        }
-    }
+    private val planViewModel: PlanViewModel by viewModels()
+    private val combinedLiveData = MediatorLiveData<Pair<PlanStatus?, PlanResponse?>>()
 
     private val loginReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -92,15 +74,39 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         }
     }
 
-    private val locationHandler = Handler(Looper.getMainLooper())
+    private val timeUpdateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_TIME_TICK) {
+                val planStatus = planViewModel.planStatus.value
+                val planDate = planViewModel.planDate.value.toString()
 
-    private var afterActiveTime = 0L
+                when(planStatus) {
+                    PlanStatus.ACTIVE -> {
+                        if (isDateEnd(planDate)) {
+                            lifecycleScope.launch { leavePlan(this@MainActivity) }
+                            planViewModel.setPlanStatus(true)
+                        }
+                    }
+                    PlanStatus.DISABLED -> {
+                        if (isActiveDate(planDate)) {
+                            planViewModel.setPlanStatus(false)
+                        } else {
+                            findViewById<TextView>(R.id.next_text).text = calculateDifference(planDate)
+                        }
+                    }
+                    PlanStatus.NO_PROMISE -> {}
+                    null -> {}
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        askNotificationPermission()
         LocalBroadcastManager.getInstance(this).registerReceiver(loginReceiver, IntentFilter("ACTION_LOGIN_REQUIRED"))
 
         mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
@@ -111,64 +117,156 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
         }
 
-        askNotificationPermission()
-    }
-
-    override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
-        try {
-            val success = mMap.setMapStyle(
-                MapStyleOptions.loadRawResourceStyle(
-                    this, R.raw.style_json
-                )
-            )
-            if (!success) {
-                Toast.makeText(this@MainActivity, "지도 불러오기 실패 다시 시도해주세요", Toast.LENGTH_SHORT).show()
-            }
-        } catch (e: Resources.NotFoundException) {
-            Toast.makeText(this@MainActivity, "지도 불러오기 실패 다시 시도해주세요", Toast.LENGTH_SHORT).show()
+        combinedLiveData.addSource(planViewModel.planStatus) { status ->
+            val plan = planViewModel.plan.value
+            combinedLiveData.value = Pair(status, plan)
         }
 
-        mMap.setOnMarkerClickListener(this@MainActivity)
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(37.627717208553854, 126.92327919682702), 16.0F))
+        combinedLiveData.addSource(planViewModel.plan) { plan ->
+            val status = planViewModel.planStatus.value
+            combinedLiveData.value = Pair(status, plan)
+        }
+
+        combinedLiveData.observe(this) { (status, plan) ->
+            val inflater: LayoutInflater = layoutInflater
+            selectedBottomView(status, plan, inflater)
+        }
+
     }
 
-    private fun bindingView() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val plan = getPlan(this@MainActivity)
-            planStatus = determinePlanStatus(plan)
+    private fun updateTimeTickReceiver(isRemove: Boolean) {
+        if (!isRemove) {
+            registerTimeTickReceiver()
+        } else {
+            unregisterReceiver(timeUpdateReceiver)
+        }
+    }
 
-            if (planStatus == PlanStatus.DISABLED) placeDate = plan?.date
-            withContext(Dispatchers.Main) {
-                planStatus?.let { setBottomLayout(it, plan) }
-                if (::mMap.isInitialized) {
-                    mMap.clear()
-                    plan?.let {
-                        val place = plan.place
-                        mMap.addMarker(MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.default_marker)).position(LatLng(place.y.toDouble(), place.x.toDouble())))
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(place.y.toDouble(), place.x.toDouble()), 16.0F))
+    private fun registerTimeTickReceiver() {
+        val filter = IntentFilter(Intent.ACTION_TIME_TICK)
+        registerReceiver(timeUpdateReceiver, filter)
+    }
 
-                        if (planStatus == PlanStatus.ACTIVE) {
-                            locationStart(plan)
-                        }
-                    }
+    override fun onResume() {
+        super.onResume()
+        planViewModel.fetchPlan(this)
+        updateTimeTickReceiver(false)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(loginReceiver)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        updateTimeTickReceiver(true)
+    }
+
+    private fun selectedBottomView(status: PlanStatus?, plan: PlanResponse?, inflater: LayoutInflater) {
+        when (status) {
+            PlanStatus.NO_PROMISE -> {
+                showNoPromiseView(inflater)
+                showMarker(false, null)
+            }
+            PlanStatus.ACTIVE -> {
+                plan?.let {
+                    showActiveView(inflater, it)
+                    showMarker(true, it)
                 }
             }
+            PlanStatus.DISABLED -> {
+                plan?.let {
+                    showDisabledView(inflater, it)
+                    showMarker(true, it)
+                }
+            }
+            else -> {
+                showNoPromiseView(inflater)
+                showMarker(false, null)
+            }
         }
-        mapFragment.onResume()
+
     }
 
-    private fun removeTimeReceiver() {
-        unregisterReceiver(timeUpdateReceiver)
+    private fun showDisabledView(inflater: LayoutInflater, promiseInfo: PlanResponse) {
+        val view = DisabledViewBinding.inflate(inflater, binding.includeContainer, false).apply {
+            this.sharedButton.setOnClickListener {
+                startActivity(
+                    Intent.createChooser(
+                        Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                            type = "text/plain"
+
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val link = getLink(this@MainActivity)
+                                if (link != null) {
+                                    withContext(Dispatchers.Main) {
+                                        this@MainActivity.copyToClipboard(link.link)
+                                        Toast.makeText(this@MainActivity, "초대 링크가 클립보드에 복사됐어요", Toast.LENGTH_SHORT).show()
+
+                                        val content = "약속에 초대됐어요!\n하단 링크를 통해 어떤 약속인지 확인하세요."
+                                        putExtra(Intent.EXTRA_TEXT,"$content\n\n$link")
+                                    }
+                                }
+                            }
+                        },
+                        "친구에게 초대 링크 공유하기"
+                    )
+                )
+            }
+
+            this.nameText.text = promiseInfo.name
+
+            val (date, time) = parseDateTime(promiseInfo.date)
+            this.dateText.text = date
+            this.timeText.text = time
+
+            this.locationText.text = promiseInfo.place.name
+
+            this.nextText.text = calculateDifference(promiseInfo.date)
+
+        }
+        updateBottomLayout(view)
     }
 
-    private fun determinePlanStatus(plan: PlanResponse?): PlanStatus {
-        return if (plan == null) {
-            PlanStatus.NO_PROMISE
-        } else if (plan.isAlarmAvailable) {
-            PlanStatus.ACTIVE
-        } else {
-            PlanStatus.DISABLED
+    private fun showActiveView(inflater: LayoutInflater, promiseInfo: PlanResponse) {
+        val view = ActiveViewBinding.inflate(inflater, binding.includeContainer, false).apply {
+            this.nameText.text = promiseInfo.name
+
+            val (date, time) = parseDateTime(promiseInfo.date)
+            this.dateText.text = date
+            this.timeText.text = time
+
+            this.locationText.text = promiseInfo.place.name
+
+            this.nextButton.setOnClickListener {
+                startActivity(Intent(this@MainActivity, AlarmActivity::class.java))
+                overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
+            }
+        }
+        updateBottomLayout(view)
+    }
+
+    private fun showNoPromiseView(inflater: LayoutInflater) {
+        val view = NoPromiseViewBinding.inflate(inflater, binding.includeContainer, false).apply {
+            this.nextButton.setOnClickListener {
+                startActivity(Intent(this@MainActivity, PlanActivity::class.java))
+                overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
+            }
+        }
+        updateBottomLayout(view)
+    }
+
+    private fun showMarker(isSet: Boolean, plan: PlanResponse?) {
+        if (::mMap.isInitialized) {
+            mMap.clear()
+            if (isSet) {
+                plan?.let {
+                    val place = plan.place
+                    mMap.addMarker(MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.default_marker)).position(LatLng(place.y.toDouble(), place.x.toDouble())))
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(place.y.toDouble(), place.x.toDouble()), 16.0F))
+                }
+            }
         }
     }
 
@@ -188,100 +286,26 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
         return "${days}일 ${hours}시간 ${minutes}분 뒤 시작돼요"
     }
 
-    private fun setBottomLayout(state: PlanStatus, promiseInfo: PlanResponse? = null) {
-        val inflater: LayoutInflater = layoutInflater
-        val view = when (state) {
-            PlanStatus.DISABLED -> {
-                DisabledViewBinding.inflate(inflater, binding.includeContainer, false).apply {
-                    this.sharedButton.setOnClickListener {
-                        startActivity(
-                            Intent.createChooser(
-                                Intent(Intent.ACTION_SEND_MULTIPLE).apply {
-                                    type = "text/plain"
-
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        val link = getLink(this@MainActivity)
-                                        if (link != null) {
-                                            withContext(Dispatchers.Main) {
-                                                this@MainActivity.copyToClipboard(link.link)
-                                                Toast.makeText(this@MainActivity, "초대 링크가 클립보드에 복사됐어요", Toast.LENGTH_SHORT).show()
-
-                                                val content = "약속에 초대됐어요!\n하단 링크를 통해 어떤 약속인지 확인하세요."
-                                                putExtra(Intent.EXTRA_TEXT,"$content\n\n$link")
-                                            }
-                                        }
-                                    }
-                                },
-                                "친구에게 초대 링크 공유하기"
-                            )
-                        )
-                    }
-
-                    this.nameText.text = promiseInfo!!.name
-
-                    val (date, time) = parseDateTime(promiseInfo.date)
-                    this.dateText.text = date
-                    this.timeText.text = time
-
-                    this.locationText.text = promiseInfo.place.name
-
-                    this.nextText.text = calculateDifference(promiseInfo.date)
-
-                    registerReceiver(timeUpdateReceiver, IntentFilter(Intent.ACTION_TIME_TICK))
-                }
-            }
-            PlanStatus.ACTIVE -> {
-                ActiveViewBinding.inflate(inflater, binding.includeContainer, false).apply {
-                    this.nameText.text = promiseInfo!!.name
-
-                    val (date, time) = parseDateTime(promiseInfo.date)
-                    this.dateText.text = date
-                    this.timeText.text = time
-
-                    this.locationText.text = promiseInfo.place.name
-
-                    this.nextButton.setOnClickListener {
-                        startActivity(Intent(this@MainActivity, AlarmActivity::class.java))
-                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
-                    }
-                }
-            }
-            PlanStatus.NO_PROMISE -> {
-                NoPromiseViewBinding.inflate(inflater, binding.includeContainer, false).apply {
-                    this.nextButton.setOnClickListener {
-                        startActivity(Intent(this@MainActivity, PlanActivity::class.java))
-                        overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
-                    }
-                }
-            }
-        }
-
+    private fun updateBottomLayout(view: ViewBinding) {
         binding.includeContainer.removeAllViews()
         binding.includeContainer.addView(view.root)
-
     }
 
-    override fun onResume() {
-        super.onResume()
-        bindingView()
-    }
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+        try {
+            val success = mMap.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(this, R.raw.style_json)
+            )
+            if (!success) {
+                Toast.makeText(this@MainActivity, "지도 불러오기 실패 다시 시도해주세요", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Resources.NotFoundException) {
+            Toast.makeText(this@MainActivity, "지도 불러오기 실패 다시 시도해주세요", Toast.LENGTH_SHORT).show()
+        }
 
-    override fun onPause() {
-        super.onPause()
-        mapFragment.onPause()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mapFragment.onDestroy()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(loginReceiver)
-        if (planStatus == PlanStatus.ACTIVE) locationStop()
-        if (planStatus == PlanStatus.DISABLED) unregisterReceiver(timeUpdateReceiver)
-    }
-
-    override fun onLowMemory() {
-        super.onLowMemory()
-        mapFragment.onLowMemory()
+        mMap.setOnMarkerClickListener(this@MainActivity)
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(37.627717208553854, 126.92327919682702), 16.0F))
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
@@ -311,91 +335,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
                     requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             }
-        }
-    }
-
-    private fun isDateEnd(dateString: String): Boolean {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'H:m:ss")
-        val inputDateTime = LocalDateTime.parse(dateString, formatter)
-
-        val koreaZone = ZoneId.of("Asia/Seoul")
-        val currentKoreaDateTime = LocalDateTime.now(koreaZone)
-
-        return inputDateTime.isBefore(currentKoreaDateTime) || inputDateTime.isEqual(currentKoreaDateTime)
-    }
-
-    private fun locationStart(plan: PlanResponse) {
-        locationHandler.postDelayed(object : Runnable {
-            override fun run() {
-                val handler = this
-                CoroutineScope(Dispatchers.IO).launch {
-                    getLocation()?.data.let {
-                        withContext(Dispatchers.Main) { setMarker(plan, it!!) }
-                    }
-                    afterActiveTime+=1500
-                    if (afterActiveTime < 150) {
-                        locationHandler.postDelayed(handler, 15000)
-                    } else {
-                        locationStop()
-                    }
-                }
-            }
-        }, 15000)
-    }
-
-    private fun locationStop() {
-        afterActiveTime = 0L
-        locationHandler.removeCallbacksAndMessages(null)
-    }
-
-    private fun setMarker(plan: PlanResponse, data: Map<String, Location>) {
-        plan.users.forEach { user ->
-            Glide.with(this)
-                .load(user.profileImage)
-                .into(binding.marker)
-            val location = data[user.id]
-            mMap.addMarker(
-                MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromBitmap(this.viewToBitmap(binding.marker)))
-                    .position(LatLng(location?.lat!!.toDouble(), location.lng.toDouble()))
-            )
-        }
-    }
-
-    private suspend fun getLocation(): LocationResponse? {
-        return try {
-            withContext(Dispatchers.IO) {
-                val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
-                val response = retrofitAPI.getLocation("bearer ${TokenManager.accessToken}")
-                if (response.isSuccessful) {
-                    response.body()
-                } else if (response.code() == 401) {
-                    val getRefresh = getRefresh()
-                    if (getRefresh != null) {
-                        TokenManager.refreshToken = getRefresh.refreshToken
-                        TokenManager.accessToken = getRefresh.accessToken
-                        getLocation()
-                    } else if (response.code() == 404) {
-                        null
-                    } else {
-                        TokenManager.refreshToken = ""
-                        TokenManager.accessToken = ""
-                        startActivity(Intent(this@MainActivity, LoginActivity::class.java))
-                        finishAffinity()
-                        null
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@MainActivity, "네트워크 에러", Toast.LENGTH_SHORT).show()
-                    }
-                    null
-                }
-            }
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(this@MainActivity, "네트워크 에러", Toast.LENGTH_SHORT).show()
-            }
-            null
         }
     }
 
