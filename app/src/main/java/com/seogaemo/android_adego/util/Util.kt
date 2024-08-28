@@ -37,6 +37,7 @@ import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 
@@ -256,6 +257,67 @@ object Util {
                 }
             }
         } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun isDateEnd(dateString: String): Boolean {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'H:m:ss")
+        val inputDateTime = LocalDateTime.parse(dateString, formatter)
+
+        val koreaZone = ZoneId.of("Asia/Seoul")
+        val currentKoreaDateTime = LocalDateTime.now(koreaZone).plusMinutes(30)
+
+        return inputDateTime.isBefore(currentKoreaDateTime) || inputDateTime.isEqual(currentKoreaDateTime)
+    }
+
+    fun isActiveDate(dateString: String): Boolean {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+        val inputDateTime = LocalDateTime.parse(dateString, formatter)
+        val koreaZone = ZoneId.of("Asia/Seoul")
+        val currentKoreaDateTime = LocalDateTime.now(koreaZone)
+
+        val thresholdDateTime = inputDateTime.minusMinutes(30)
+        return currentKoreaDateTime.isEqual(thresholdDateTime) || currentKoreaDateTime.isAfter(thresholdDateTime)
+    }
+
+    suspend fun leavePlan(context: Context): PlanResponse? {
+        return try {
+            withContext(Dispatchers.IO) {
+                val retrofitAPI = RetrofitClient.getInstance().create(RetrofitAPI::class.java)
+                val response = retrofitAPI.leavePlan("bearer ${TokenManager.accessToken}")
+                if (response.isSuccessful) {
+                    response.body()
+                } else if (response.code() == 401) {
+                    val getRefresh = Util.getRefresh()
+                    if (getRefresh != null) {
+                        TokenManager.refreshToken = getRefresh.refreshToken
+                        TokenManager.accessToken = getRefresh.accessToken
+                        leavePlan(context)
+                    } else {
+                        TokenManager.refreshToken = ""
+                        TokenManager.accessToken = ""
+                        context.startActivity(Intent(context, LoginActivity::class.java))
+                        (context as Activity).finishAffinity()
+                        context.overridePendingTransition(R.anim.anim_slide_in_from_right_fade_in, R.anim.anim_fade_out)
+                        null
+                    }
+                } else if (response.code() == 404) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "약속이 없습니다", Toast.LENGTH_SHORT).show()
+                    }
+                    null
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "약속 나가기를 실패하셨습니다", Toast.LENGTH_SHORT).show()
+                    }
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "약속 나가기를 실패하셨습니다", Toast.LENGTH_SHORT).show()
+            }
             null
         }
     }
