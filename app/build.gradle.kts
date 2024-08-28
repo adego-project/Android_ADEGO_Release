@@ -110,4 +110,6 @@ dependencies {
     implementation(libs.play.services.tasks)
 
     implementation(libs.play.services.location)
+
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 }
