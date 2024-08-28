@@ -5,8 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -49,17 +47,17 @@ class LoginActivity : AppCompatActivity() {
             saveToken(this@LoginActivity, "test", "test")
         }
 
-        binding.kakaoLoginButton.setOnClickListener {
-            kakaoLogin(this@LoginActivity)
-        }
-
-        binding.googleLoginButton.setOnClickListener {
-            googleLogin(this@LoginActivity)
-        }
-
-        binding.logoButton.setOnClickListener {
-            saveToken(this@LoginActivity, "test", "test")
-        }
+//        binding.kakaoLoginButton.setOnClickListener {
+//            kakaoLogin(this@LoginActivity)
+//        }
+//
+//        binding.googleLoginButton.setOnClickListener {
+//            googleLogin(this@LoginActivity)
+//        }
+//
+//        binding.logoButton.setOnClickListener {
+//            saveToken(this@LoginActivity, "test", "test")
+//        }
 
     }
 
