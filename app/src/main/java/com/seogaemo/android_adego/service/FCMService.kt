@@ -36,13 +36,12 @@ class FCMService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
 
         remoteMessage.notification?.let {
-//            sendNotification(it.title.toString(), it.body.toString())
-            sendNotification("친구분이 알림을 울렸어요!", "빨리 약속에 참석해주세요!")
+            val title = it.title.toString()
+            val body = it.body.toString()
+            sendNotification(title, body)
         }
 
         remoteMessage.data.isNotEmpty().let {
-//            val title = remoteMessage.data["title"].toString()
-//            val body = remoteMessage.data["body"].toString()
             sendNotification("친구분이 알림을 울렸어요!", "빨리 약속에 참석해주세요!")
         }
     }

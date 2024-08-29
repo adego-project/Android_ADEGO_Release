@@ -6,12 +6,9 @@ import com.seogaemo.android_adego.data.FCMResponse
 import com.seogaemo.android_adego.data.ImageRequest
 import com.seogaemo.android_adego.data.NameRequest
 import com.seogaemo.android_adego.data.InvitePlanUrlResponse
-import com.seogaemo.android_adego.data.Location
-import com.seogaemo.android_adego.data.LocationResponse
 import com.seogaemo.android_adego.data.PlanInviteResponse
 import com.seogaemo.android_adego.data.PlanRequest
 import com.seogaemo.android_adego.data.PlanResponse
-import com.seogaemo.android_adego.data.SignInRequest
 import com.seogaemo.android_adego.data.SignInResponse
 import com.seogaemo.android_adego.data.UserResponse
 import retrofit2.Response
@@ -27,16 +24,6 @@ import retrofit2.http.Query
 
 
 interface RetrofitAPI {
-    @POST("oauth/kakao/login")
-    suspend fun kakaoSignIn(
-        @Body body: SignInRequest
-    ): Response<SignInResponse>
-
-    @POST("oauth/google/login")
-    suspend fun googleSignIn(
-        @Body body: SignInRequest
-    ): Response<SignInResponse>
-
     @GET("user")
     suspend fun getUser(
         @Header("Authorization") authorization: String,
@@ -106,17 +93,6 @@ interface RetrofitAPI {
     @POST("auth/test-account")
     suspend fun testSignIn(
     ): Response<SignInResponse>
-
-    @GET("location/participants")
-    suspend fun getLocation(
-        @Header("Authorization") authorization: String,
-    ): Response<LocationResponse>
-
-    @POST("location/update")
-    suspend fun updateLocation(
-        @Header("Authorization") authorization: String,
-        @Body body: Location
-    ): Response<Boolean>
 
     @PUT("user/fcm")
     suspend fun setFCMToken(

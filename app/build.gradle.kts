@@ -18,12 +18,6 @@ android {
     }
 
     val BASE_URL = localProperties.getProperty("BASE_URL") ?: ""
-
-    val KAKAO_NATIVE_KEY = localProperties.getProperty("KAKAO_NATIVE_KEY") ?: ""
-    val MANIFESTS_KAKAO_NATIVE_KEY = localProperties.getProperty("MANIFESTS_KAKAO_NATIVE_KEY") ?: ""
-
-    val CLIENT_ID = localProperties.getProperty("CLIENT_ID") ?: ""
-
     val MAPS_API_KEY = localProperties.getProperty("MAPS_API_KEY") ?: ""
 
     defaultConfig {
@@ -37,14 +31,6 @@ android {
 
         buildConfigField("String", "BASE_URL", "\"$BASE_URL\"")
         resValue("string", "BASE_URL", BASE_URL)
-
-        buildConfigField("String", "KAKAO_NATIVE_KEY", "\"$KAKAO_NATIVE_KEY\"")
-        resValue("string", "KAKAO_NATIVE_KEY", KAKAO_NATIVE_KEY)
-        buildConfigField("String", "MANIFESTS_KAKAO_NATIVE_KEY", "\"$MANIFESTS_KAKAO_NATIVE_KEY\"")
-        resValue("string", "MANIFESTS_KAKAO_NATIVE_KEY", MANIFESTS_KAKAO_NATIVE_KEY)
-
-        buildConfigField("String", "CLIENT_ID", "\"$CLIENT_ID\"")
-        resValue("string", "CLIENT_ID", CLIENT_ID)
 
         buildConfigField("String", "MAPS_API_KEY", "\"$MAPS_API_KEY\"")
         resValue("string", "MAPS_API_KEY", MAPS_API_KEY)
@@ -89,12 +75,6 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.converter.scalars)
 
-    implementation(libs.v2.all)
-
-    implementation(libs.googleid)
-    implementation(libs.androidx.credentials.play.services.auth)
-    implementation(libs.androidx.credentials)
-
     implementation(libs.glide)
 
     implementation(libs.play.services.maps)
@@ -108,8 +88,6 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.messaging.ktx)
     implementation(libs.play.services.tasks)
-
-    implementation(libs.play.services.location)
 
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
 }
