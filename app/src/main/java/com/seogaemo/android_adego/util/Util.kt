@@ -7,14 +7,10 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.Intent
-import android.content.res.Resources
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.util.Base64
-import android.view.View
 import android.view.Window
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
@@ -140,9 +136,6 @@ object Util {
         return date.format(outputFormatter)
     }
 
-    fun Float.fromDpToPx(): Int =
-        (this * Resources.getSystem().displayMetrics.density).toInt()
-
     fun keyboardDown(activity: Activity) {
         val manager = activity.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager?
         manager!!.hideSoftInputFromWindow(
@@ -186,18 +179,6 @@ object Util {
     }
 
     fun Context.isValidGlideContext() = this !is Activity || (!this.isDestroyed && !this.isFinishing)
-
-    fun Context.viewToBitmap(view: View): Bitmap {
-        val returnedBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(returnedBitmap)
-        val bgDrawable = view.background
-        if (bgDrawable != null)
-            bgDrawable.draw(canvas)
-        else
-            canvas.drawColor(Color.TRANSPARENT)
-        view.draw(canvas)
-        return returnedBitmap
-    }
 
     suspend fun getLink(activity: Activity): InvitePlanUrlResponse? {
         return try {
@@ -263,22 +244,22 @@ object Util {
 
     fun isDateEnd(dateString: String): Boolean {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'H:m:ss")
-        val inputDateTime = LocalDateTime.parse(dateString, formatter)
+        val inputDateTime = LocalDateTime.parse(dateString, formatter).plusMinutes(30)
 
-        val koreaZone = ZoneId.of("Asia/Seoul")
-        val currentKoreaDateTime = LocalDateTime.now(koreaZone).plusMinutes(30)
-
-        return inputDateTime.isBefore(currentKoreaDateTime) || inputDateTime.isEqual(currentKoreaDateTime)
-    }
-
-    fun isActiveDate(dateString: String): Boolean {
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
-        val inputDateTime = LocalDateTime.parse(dateString, formatter)
         val koreaZone = ZoneId.of("Asia/Seoul")
         val currentKoreaDateTime = LocalDateTime.now(koreaZone)
 
-        val thresholdDateTime = inputDateTime.minusMinutes(30)
-        return currentKoreaDateTime.isEqual(thresholdDateTime) || currentKoreaDateTime.isAfter(thresholdDateTime)
+        return currentKoreaDateTime.isAfter(inputDateTime) || currentKoreaDateTime.isEqual(inputDateTime)
+    }
+
+    fun isActiveDate(dateString: String): Boolean {
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:m:ss")
+        val inputDateTime = LocalDateTime.parse(dateString, formatter).minusMinutes(30)
+
+        val koreaZone = ZoneId.of("Asia/Seoul")
+        val currentKoreaDateTime = LocalDateTime.now(koreaZone)
+
+        return currentKoreaDateTime.isEqual(inputDateTime) || currentKoreaDateTime.isAfter(inputDateTime)
     }
 
     suspend fun leavePlan(context: Context): PlanResponse? {
