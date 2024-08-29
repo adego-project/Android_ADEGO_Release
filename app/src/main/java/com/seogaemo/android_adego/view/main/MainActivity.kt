@@ -132,6 +132,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMarker
             selectedBottomView(status, plan, inflater)
         }
 
+        planViewModel.plan.observe(this) { plan ->
+            if (isDateEnd(plan.date)) {
+                lifecycleScope.launch { leavePlan(this@MainActivity) }
+                planViewModel.setPlanStatus(true)
+            }
+        }
+
     }
 
     private fun updateTimeTickReceiver(isRemove: Boolean) {
